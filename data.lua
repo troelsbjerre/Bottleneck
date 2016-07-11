@@ -14,7 +14,7 @@ data:extend(
             priority = "extra-high",
             width = 32,
             height = 32,
-            shift = {0.25, 0.7}
+            shift = {-0.5, 0.7}
         }
     },
     {
@@ -31,7 +31,7 @@ data:extend(
             priority = "extra-high",
             width = 32,
             height = 32,
-            shift = {0.25, 0.7}
+            shift = {-0.5, 0.7}
         }
     },
     {
@@ -48,7 +48,7 @@ data:extend(
             priority = "extra-high",
             width = 32,
             height = 32,
-            shift = {0.25, 0.7}
+            shift = {-0.5, 0.7}
         }
     },
 })
