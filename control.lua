@@ -96,8 +96,10 @@ end
 
 function built(event)
 	if event.created_entity.type == "assembling-machine" then
-		freeze[event.create_entity] = -1
-		overlays[event.create_entity] = surface.create_entity{name = "bottleneck-red", position = entity.position}
-		update_machine(event.created_entity)
+		local surface = game.surfaces['nauvis']
+		local entity = event.created_entity
+		freeze[entity] = -1
+		overlays[entity] = surface.create_entity{name = "bottleneck-red", position = entity.position}
+		update_machine(entity)
 	end
 end
