@@ -34,7 +34,7 @@ function calc_map_bounds()
 		end
 	end
 	-- create bounding box covering entire generated map
-	return {{min_x*32,min_y*32},{max_x*32,max_y*32}}
+	return {{min_x*32,min_y*32},{max_x*32+32,max_y*32+32}}
 end
 
 function init()
@@ -42,6 +42,7 @@ function init()
 	local surface = game.surfaces['nauvis']
 	overlays = {}
 	freeze = {}
+	-- Clear up any mess made in v0.0.1 and v0.0.2:
 	for _, ol in pairs(surface.find_entities_filtered{area=bounds, name="bottleneck-green"}) do
 		ol.destroy()
 	end
@@ -52,6 +53,11 @@ function init()
 		ol.destroy()
 	end
 	for _, am in pairs(surface.find_entities_filtered{area=bounds, type="assembling-machine"}) do
+		freeze[am] = -1
+		overlays[am] = surface.create_entity{name = "bottleneck-red", position = am.position}
+		update_machine(am)
+	end
+	for _, am in pairs(surface.find_entities_filtered{area=bounds, type="furnace"}) do
 		freeze[am] = -1
 		overlays[am] = surface.create_entity{name = "bottleneck-red", position = am.position}
 		update_machine(am)
@@ -95,9 +101,10 @@ function tick(event)
 end
 
 function built(event)
-	if event.created_entity.type == "assembling-machine" then
-		local surface = game.surfaces['nauvis']
-		local entity = event.created_entity
+	local surface = game.surfaces['nauvis']
+	local entity = event.created_entity
+	if event.created_entity.type == "assembling-machine"
+	or event.created_entity.type == "furnace" then
 		freeze[entity] = -1
 		overlays[entity] = surface.create_entity{name = "bottleneck-red", position = entity.position}
 		update_machine(entity)
