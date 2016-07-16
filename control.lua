@@ -87,7 +87,7 @@ function on_tick(event)
 			signal.destroy()
 
 			-- Remove entry from overlays
-			table.remove(overlays, index)
+			table.remove(global.overlays, index)
 
 		-- If it is time to refresh the signal
 		elseif event.tick >= data.freeze then
