@@ -10,7 +10,7 @@ end
 function on_init()
 	--[[
 		Setup the global overlays table
-		This table contains information about machine/signal positions, surfaces and freeze time
+		This table contains the machine entity, the signal entity and the freeze variable
 	]]--
 	if global.overlays == nil then
 		global.overlays = {}
@@ -23,7 +23,7 @@ end
 function on_configuration_changed()
 	--[[
 		Setup the global overlays table
-		This table contains information about machine/signal positions, surfaces and freeze time
+		This table contains the machine entity, the signal entity and the freeze variable
 	]]--
 	if global.overlays == nil then
 		global.overlays = {}
@@ -42,13 +42,10 @@ function on_tick(event)
 	
 		--If the data is not nil (failsafe)...
 		if data ~= nil then
-			-- Get the surface
-			local surface = game.surfaces[data.surface]
-		
-			-- Find the machine entity (currently only assembly machines and furnaces)
-			local entity = surface.find_entity(data.name, data.position)
+			-- Get the machine entity
+			local entity = data.entity
 			-- Get the signal entity on this machine
-			local signal = find_signal_at(surface, data.signal_position)
+			local signal = data.signal
 			
 			-- If the machine or signal entity is nil (not found)...
 			if entity == nil or signal == nil then
@@ -62,9 +59,23 @@ function on_tick(event)
 				
 			-- If the machine and signal entity was found...
 			elseif entity ~= nil and signal ~= nil then
+				
+				-- If the machine is not a valid entity (perhaps destroyed?)...
+				if not entity.valid then
+					-- If the signal is a valid entity...
+					if signal.valid then
+						-- Remove the signal
+						signal.destroy()
+					end
+					
+					-- Remove the data from the global.overlays index
+					global.overlays[index] = nil
+				end
 			
 				-- If the freeze variable of the data is less than the global time variable...
-				if data.freeze < global.time then
+				if global.overlays[index] ~= nil and data.freeze < global.time then
+					-- Get the surface
+					local surface = data.entity.surface or data.signal.surface
 					-- Update the machine
 					update_machine(index, entity, signal, surface)
 				end
@@ -75,23 +86,9 @@ function on_tick(event)
 	
 end
 
---[[ A helper function to find a signal entity on a position ]]--
-function find_signal_at(surface, position)
-
-	--For some unknown reason, trying to just do surface.find_entity("bottleneck-red", position) doesn't work..
-	local entities = surface.find_entities_filtered({area = { {position.x - 0.1, position.y - 0.1}, {position.x + 0.1, position.y + 0.1} }, type = "decorative"})
-	
-	for _, entity in ipairs(entities) do
-		if entity.name == "bottleneck-red" or entity.name == "bottleneck-yellow" or entity.name == "bottleneck-green" then
-			return entity
-		end
-	end
-	
-	return nil
-end
-
 --[[ A function to update a machine entity's signal ]]--
-function update_machine(index, entity, signal, surface)
+function update_machine(index, entity, signal)
+	local surface = entity.surface or signal.surface
 	
 	-- If the machine is crafting something...
 	if entity.is_crafting() then
@@ -99,11 +96,11 @@ function update_machine(index, entity, signal, surface)
 		if signal.name ~= "bottleneck-green" then
 			-- Destroy the signal
 			signal.destroy()
-			-- Update the global data value to green
-			global.overlays[index].signal_name = "bottleneck-green"
-			global.overlays[index].freeze = global.time + 1 * 60 -- No need to check every tick.. Once every second should be enough
 			-- Create a new signal
 			signal = surface.create_entity({ name = "bottleneck-green", position = entity.position })
+			-- Update the global data value to green
+			global.overlays[index].signal = signal
+			global.overlays[index].freeze = global.time + 1 * 60 -- No need to check every tick.. Once every second should be enough
 		end
 	-- If the machine isn't crafting but have resources in the output slot...
 	elseif (entity.type == "assembly-machine" and entity.get_inventory(defines.inventory.assembling_machine_output).get_item_count() > 0)
@@ -112,21 +109,21 @@ function update_machine(index, entity, signal, surface)
 		if signal.name ~= "bottleneck-yellow" then
 			-- Destroy the signal
 			signal.destroy()
-			-- Update the global data value to yellow
-			global.overlays[index].signal_name = "bottleneck-yellow"
-			global.overlays[index].freeze = global.time + 1 * 60 -- No need to check every tick.. Once every second should be enough
 			-- Create a new signal
 			signal = surface.create_entity({ name = "bottleneck-yellow", position = entity.position })
+			-- Update the global data value to yellow
+			global.overlays[index].signal = signal
+			global.overlays[index].freeze = global.time + 1 * 60 -- No need to check every tick.. Once every second should be enough
 		end
 	-- If the machine isn't crafting and has no resources in the output slot (The machine is total idle)...
 	elseif signal.name ~= "bottleneck-red" then
 		-- Destroy the signal
 		signal.destroy()
-		-- Update the global data value to red
-		global.overlays[index].signal_name = "bottleneck-red"
-		global.overlays[index].freeze = global.time + 3 * 60
 		-- Create a new signal
 		signal = surface.create_entity({ name = "bottleneck-red", position = entity.position })
+		-- Update the global data value to red
+		global.overlays[index].signal = signal
+		global.overlays[index].freeze = global.time + 3 * 60
 	end
 end
 
@@ -144,11 +141,8 @@ function built(event)
 		
 		-- Insert the data into the global overlays table.
 		table.insert(global.overlays, {
-			name = entity.name, -- The name of the machine entity. This makes it easier to find it later.
-			signal_name = 'bottleneck-red', -- The name of the signal entity.
-			position = entity.position, -- The position of the machine entity.
-			signal_position = signal.position, -- The position of the signal entity (should be the same as the machine entity).
-			surface = surface.name, -- The name of the surface the machine entity was built on.
+			entity = entity,
+			signal = signal,
 			freeze = global.time + 60 -- Set the freeze variable to update 1 second from now.
 		})
 	end
