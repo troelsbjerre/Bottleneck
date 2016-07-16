@@ -2,10 +2,10 @@ data:extend(
 {
     {
         type = "decorative",
-        name = "bottleneck-red",
+        name = "red-bottleneck",
         flags = {"placeable-neutral", "player-creation", "not-repairable"},
         icon = "__Bottleneck__/graphics/red.png",
-        order = 'z[bottleneck-red]',
+        order = 'z[red-bottleneck]',
 		render_layer = "higher-object-above",
 
         pictures =
@@ -19,10 +19,10 @@ data:extend(
     },
     {
         type = "decorative",
-        name = "bottleneck-yellow",
+        name = "yellow-bottleneck",
         flags = {"placeable-neutral", "player-creation", "not-repairable"},
         icon = "__Bottleneck__/graphics/yellow.png",
-        order = 'z[bottleneck-yellow]',
+        order = 'z[yellow-bottleneck]',
 		render_layer = "higher-object-above",
 
         pictures =
@@ -36,10 +36,10 @@ data:extend(
     },
     {
         type = "decorative",
-        name = "bottleneck-green",
+        name = "green-bottleneck",
         flags = {"placeable-neutral", "player-creation", "not-repairable"},
         icon = "__Bottleneck__/graphics/green.png",
-        order = 'z[bottleneck-green]',
+        order = 'z[green-bottleneck]',
 		render_layer = "higher-object-above",
 
         pictures =
