@@ -6,11 +6,7 @@ function msg(message)
 	end
 end
 
-
 function init()
-	--[[ Setup the global time variable, this will be updated every tick ]]--
-	global.time = 0
-
 	--[[
 		Setup the global overlays table
 		This table contains the machine entity, the signal entity and the freeze variable
@@ -71,29 +67,36 @@ function init()
 end
 
 function on_tick(event)
-	--Update the global time variable
-	global.time = event.tick
-	
 	--For every data in global.overlays...
-	for index, data in pairs(global.overlays) do
+	-- todo: put the magic 40 into config
+	for i=1,40 do
+		if (global.update_index == nil) then
+			global.update_index = 1
+		else
+			global.update_index = global.update_index + 1
+		end
+		
+		if global.update_index > #global.overlays then
+			global.update_index = 1
+		end
+		
+		--msg(#global.overlays .. " @" .. game.tick)
+		local data = global.overlays[global.update_index]
+		
 		-- Get the machine entity
 		local entity = data.entity
 		-- Get the signal entity on this machine
 		local signal = data.signal
 			
-		-- If the machine is not a valid entity (perhaps destroyed?)...
-		if not entity.valid then
+		-- update machine if valid
+		if entity.valid then
+			update_machine(data)
+		else
 			-- Remove the signal
 			signal.destroy()
-
-			-- Remove entry from overlays
-			table.remove(global.overlays, index)
-
-		-- If it is time to refresh the signal
-		elseif event.tick >= data.freeze then
-			-- Update the machine
-			update_machine(data)
-		end	
+			-- Remove entry from overlays			
+			table.remove(global.overlays, global.update_index)
+		end
 	end
 end
 
@@ -126,8 +129,6 @@ function update_machine(data)
 			signal.destroy()
 			-- Create a new signal
 			data.signal = surface.create_entity({ name = "green-bottleneck", position = entity.position })
-			-- TODO: Do a more clever update of freeze. Cannot blindly skip forward, since this might skip warnings
-			--data.freeze = global.time + delay
 		end
 	-- If the machine isn't crafting but have resources in the output slot...
 	elseif (entity.type == "assembling-machine" and entity.get_inventory(defines.inventory.assembling_machine_output).get_item_count() > 0)
@@ -138,8 +139,6 @@ function update_machine(data)
 			signal.destroy()
 			-- Create a new signal
 			data.signal = surface.create_entity({ name = "yellow-bottleneck", position = entity.position })
-			-- TODO: Do a more clever update of freeze. Cannot blindly skip forward, since this might skip warnings
-			--data.freeze = global.time + delay
 		end
 	-- If the machine isn't crafting and has no resources in the output slot (The machine is total idle)...
 	else
@@ -149,7 +148,6 @@ function update_machine(data)
 			signal.destroy()
 			-- Create a new signal
 			data.signal = surface.create_entity({ name = "red-bottleneck", position = entity.position })
-			data.freeze = global.time + 3 * 60
 		end
 	end
 end
@@ -170,8 +168,6 @@ function built(event)
 		table.insert(global.overlays, {
 			entity = entity,
 			signal = signal,
-			-- TODO: Do a clever update of freeze.
-			freeze = global.time + 3 * 60
 		})
 	end
 end
