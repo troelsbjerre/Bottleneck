@@ -8,12 +8,26 @@ end
 
 function init()
 	--[[
+	-- Check if old version loaded
+	--]]
+	if (global.overlays ~= nil) then
+		if (global.version == nil) or (global.version ~= "0.2.0") then
+			global.version = "0.2.0"
+			for _, data in pairs(global.overlays) do
+				data.signal.destroy()
+			end
+			global.overlays = nil
+		end
+	end
+
+	--[[
 		Setup the global overlays table
 		This table contains the machine entity, the signal entity and the freeze variable
 	]]--
 
 	if global.overlays == nil then
 		global.overlays = {}
+		msg("bottleneck: building data from scratch")
 
 		--[[
 			Find all assembling machines on the map.
@@ -62,93 +76,98 @@ function init()
 			for _, am in pairs(surface.find_entities_filtered{area=bounds, type="furnace"}) do
 				built({created_entity = am})
 			end
+
+			--[[
+				Find all mining-drills within the bounds, and pretend that they were just built
+			]]--
+			for _, am in pairs(surface.find_entities_filtered{area=bounds, type="mining-drill"}) do
+				built({created_entity = am})
+			end
 		end
 	end
 end
 
 function on_tick(event)
-	--For every data in global.overlays...
-	-- todo: put the magic 40 into config
-	for i=1,40 do
-		if (global.update_index == nil) then
-			global.update_index = 1
-		else
-			global.update_index = global.update_index + 1
+	if (#global.overlays > 0) then
+		local index = global.update_index or 0
+		local overlays = global.overlays
+		-- only perform 40 updates per tick
+		-- todo: put the magic 40 into config
+		for i = 1,40 do
+			index = index + 1
+			if index > #overlays then
+				index = 1
+			end
+
+			local data = overlays[index]
+
+			local entity = data.entity
+			local signal = data.signal
+
+			-- if entity is valid, update it, otherwise remove the signal and the associated data
+			if entity.valid then
+				data.update(data)
+			else
+				signal.destroy()
+				table.remove(overlays, index)
+			end
 		end
-		
-		if global.update_index > #global.overlays then
-			global.update_index = 1
-		end
-		
-		--msg(#global.overlays .. " @" .. game.tick)
-		local data = global.overlays[global.update_index]
-		
-		-- Get the machine entity
-		local entity = data.entity
-		-- Get the signal entity on this machine
-		local signal = data.signal
-			
-		-- update machine if valid
-		if entity.valid then
-			update_machine(data)
-		else
-			-- Remove the signal
-			signal.destroy()
-			-- Remove entry from overlays			
-			table.remove(global.overlays, global.update_index)
-		end
+		global.update_index = index
 	end
 end
 
---[[ A function to update a machine entity's signal ]]--
-function update_machine(data)
+function change_signal(data, signal_color)
 	local entity = data.entity
 	local signal = data.signal
-	local surface = data.entity.surface
-
-	--[[
-		compute distance to nearest player
-	local playerdist = nil
-	for _, player in pairs(game.players) do
-		local dx = entity.position.x - player.position.x
-		if dx < 0 then dx = -dx end
-		local dy = entity.position.y - player.position.y
-		if dy < 0 then dy = -dy end
-		local dist = dx
-		if dy > dist then dist = dy end
-		if playerdist == nil or dist < playerdist then playerdist = dist end
+	if signal.name ~= signal_color then
+		signal.destroy()
+		data.signal = entity.surface.create_entity({ name = signal_color, position = entity.position })
 	end
-	local delay = 60 --playerdist / 8 - 16
-	--]]
-	
-	-- If the machine is crafting something...
-	if entity.is_crafting() then
-		-- And the signal is not set to green...
-		if signal.name ~= "green-bottleneck" then
-			-- Destroy the signal
-			signal.destroy()
-			-- Create a new signal
-			data.signal = surface.create_entity({ name = "green-bottleneck", position = entity.position })
-		end
-	-- If the machine isn't crafting but have resources in the output slot...
-	elseif (entity.type == "assembling-machine" and entity.get_inventory(defines.inventory.assembling_machine_output).get_item_count() > 0)
-	or (entity.type == "furnace" and entity.get_inventory(defines.inventory.furnace_result).get_item_count() > 0) then
-		-- And the signal is not set to yellow...
-		if signal.name ~= "yellow-bottleneck" then
-			-- Destroy the signal
-			signal.destroy()
-			-- Create a new signal
-			data.signal = surface.create_entity({ name = "yellow-bottleneck", position = entity.position })
-		end
-	-- If the machine isn't crafting and has no resources in the output slot (The machine is total idle)...
+end
+
+function update_drill(data)
+	local entity = data.entity
+	local progress = data.progress
+
+	if (entity.mining_target == nil) or (entity.energy == 0) then
+		change_signal(data, "red-bottleneck")
+	elseif (entity.mining_progress == progress) then
+		change_signal(data, "yellow-bottleneck")
 	else
-		-- And the signal is not set to red...
-		if signal.name ~= "red-bottleneck" then
-			-- Destroy the signal
-			signal.destroy()
-			-- Create a new signal
-			data.signal = surface.create_entity({ name = "red-bottleneck", position = entity.position })
-		end
+		change_signal(data, "green-bottleneck")
+		data.progress = entity.mining_progress
+	end
+end
+
+function update_machine(data)
+	local entity = data.entity
+	local progress = data.progress
+
+	if entity.energy == 0 then
+		change_signal(data, "red-bottleneck")
+	elseif entity.is_crafting() and (entity.crafting_progress < 1) then
+		change_signal(data, "green-bottleneck")
+	elseif (entity.crafting_progress >= 1) -- has a full output buffer
+		or (entity.get_inventory(defines.inventory.assembling_machine_output).get_item_count() > 0) then
+		change_signal(data, "yellow-bottleneck")
+	else
+		change_signal(data, "red-bottleneck")
+	end
+end
+
+function update_furnace(data)
+	local entity = data.entity
+	local progress = data.progress
+
+	if entity.energy == 0 then
+		change_signal(data, "red-bottleneck")
+	elseif entity.is_crafting() and (entity.crafting_progress < 1) then
+		change_signal(data, "green-bottleneck")
+	elseif entity.crafting_progress >= 1 -- has a full output buffer
+		or (entity.get_inventory(defines.inventory.furnace_result).get_item_count() > 0) then
+		change_signal(data, "yellow-bottleneck")
+	else
+		change_signal(data, "red-bottleneck")
 	end
 end
 
@@ -158,16 +177,29 @@ function built(event)
 	local surface = entity.surface
 	
 	-- If the entity that's been built is an assembly machine or a furnace...
-	if entity.type == "assembling-machine"
-	or entity.type == "furnace" then
-	
-		-- Create a new signal ontop of the machine (defaults to red)
+	if entity.type == "assembling-machine" then
 		local signal = surface.create_entity({ name = "red-bottleneck", position = entity.position })
-		
-		-- Insert the data into the global overlays table.
 		table.insert(global.overlays, {
 			entity = entity,
 			signal = signal,
+			progress = 0,
+			update = update_machine,
+		})
+	elseif entity.type == "furnace" then
+		local signal = surface.create_entity({ name = "red-bottleneck", position = entity.position })
+		table.insert(global.overlays, {
+			entity = entity,
+			signal = signal,
+			progress = 0,
+			update = update_furnace,
+		})
+	elseif entity.type == "mining-drill" then
+		local signal = surface.create_entity({ name = "red-bottleneck", position = entity.position })
+		table.insert(global.overlays, {
+			entity = entity,
+			signal = signal,
+			progress = 0,
+			update = update_drill,
 		})
 	end
 end
