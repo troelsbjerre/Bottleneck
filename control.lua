@@ -11,8 +11,8 @@ function init()
 	-- Check if old version loaded
 	--]]
 	if (global.overlays ~= nil) then
-		if (global.version == nil) or (global.version ~= "0.2.0") then
-			global.version = "0.2.0"
+		if (global.version == nil) or (global.version ~= "0.2.1") then
+			global.version = "0.2.1"
 			for _, data in pairs(global.overlays) do
 				data.signal.destroy()
 			end
@@ -88,9 +88,9 @@ function init()
 end
 
 function on_tick(event)
-	if (#global.overlays > 0) then
+	local overlays = global.overlays
+	if (#overlays > 0) then
 		local index = global.update_index or 0
-		local overlays = global.overlays
 		-- only perform 40 updates per tick
 		-- todo: put the magic 40 into config
 		for i = 1,40 do
@@ -145,9 +145,12 @@ function update_machine(data)
 
 	if entity.energy == 0 then
 		change_signal(data, "red-bottleneck")
-	elseif entity.is_crafting() and (entity.crafting_progress < 1) then
+	elseif entity.is_crafting() 
+		and (entity.crafting_progress < 1) 
+		and (entity.bonus_progress < 1) then
 		change_signal(data, "green-bottleneck")
 	elseif (entity.crafting_progress >= 1) -- has a full output buffer
+		or (entity.bonus_progress >= 1) -- has a full bonus buffer
 		or (entity.get_inventory(defines.inventory.assembling_machine_output).get_item_count() > 0) then
 		change_signal(data, "yellow-bottleneck")
 	else
@@ -157,13 +160,15 @@ end
 
 function update_furnace(data)
 	local entity = data.entity
-	local progress = data.progress
 
 	if entity.energy == 0 then
 		change_signal(data, "red-bottleneck")
-	elseif entity.is_crafting() and (entity.crafting_progress < 1) then
+	elseif entity.is_crafting() 
+		and (entity.crafting_progress < 1) 
+		and (entity.bonus_progress < 1) then
 		change_signal(data, "green-bottleneck")
-	elseif entity.crafting_progress >= 1 -- has a full output buffer
+	elseif (entity.crafting_progress >= 1) -- has a full output buffer
+		or (entity.bonus_progress >= 1) -- has a full bonus buffer
 		or (entity.get_inventory(defines.inventory.furnace_result).get_item_count() > 0) then
 		change_signal(data, "yellow-bottleneck")
 	else
@@ -182,7 +187,6 @@ function built(event)
 		table.insert(global.overlays, {
 			entity = entity,
 			signal = signal,
-			progress = 0,
 			update = update_machine,
 		})
 	elseif entity.type == "furnace" then
@@ -190,7 +194,6 @@ function built(event)
 		table.insert(global.overlays, {
 			entity = entity,
 			signal = signal,
-			progress = 0,
 			update = update_furnace,
 		})
 	elseif entity.type == "mining-drill" then
