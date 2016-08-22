@@ -1,5 +1,7 @@
 require "util"
 
+local show_bottlenecks = true
+
 function msg(message)
 	for _,p in pairs(game.players) do
 		p.print(message)
@@ -11,8 +13,8 @@ function init()
 	-- Check if old version loaded
 	--]]
 	if (global.overlays ~= nil) then
-		if (global.version == nil) or (global.version ~= "0.2.1") then
-			global.version = "0.2.1"
+		if (global.version == nil) or (global.version ~= "0.2.2") then
+			global.version = "0.2.2"
 			for _, data in pairs(global.overlays) do
 				data.signal.destroy()
 			end
@@ -21,8 +23,8 @@ function init()
 	end
 
 	--[[
-		Setup the global overlays table
-		This table contains the machine entity, the signal entity and the freeze variable
+	Setup the global overlays table
+	This table contains the machine entity, the signal entity and the freeze variable
 	]]--
 
 	if global.overlays == nil then
@@ -30,12 +32,12 @@ function init()
 		msg("bottleneck: building data from scratch")
 
 		--[[
-			Find all assembling machines on the map.
-			Check each surface
+		Find all assembling machines on the map.
+		Check each surface
 		]]--
 		for name, surface in pairs(game.surfaces) do
 			--[[
-				Iterate through chunks, and compute min and max values of coordinates
+			Iterate through chunks, and compute min and max values of coordinates
 			]]--
 			local min_x, min_y, max_x, max_y
 			for c in surface.get_chunks() do
@@ -59,26 +61,26 @@ function init()
 			end
 
 			--[[
-				Bounds are given from min and max values. Must add 32 to max, since chunk coordinates times 32 are smallest (x,y) of that chunk
+			Bounds are given from min and max values. Must add 32 to max, since chunk coordinates times 32 are smallest (x,y) of that chunk
 			]]--
 			local bounds = {{min_x*32,min_y*32},{max_x*32+32,max_y*32+32}}
 
 			--[[
-				Find all assembling machines within the bounds, and pretend that they were just built
+			Find all assembling machines within the bounds, and pretend that they were just built
 			]]--
 			for _, am in pairs(surface.find_entities_filtered{area=bounds, type="assembling-machine"}) do
 				built({created_entity = am})
 			end
 
 			--[[
-				Find all furnaces within the bounds, and pretend that they were just built
+			Find all furnaces within the bounds, and pretend that they were just built
 			]]--
 			for _, am in pairs(surface.find_entities_filtered{area=bounds, type="furnace"}) do
 				built({created_entity = am})
 			end
 
 			--[[
-				Find all mining-drills within the bounds, and pretend that they were just built
+			Find all mining-drills within the bounds, and pretend that they were just built
 			]]--
 			for _, am in pairs(surface.find_entities_filtered{area=bounds, type="mining-drill"}) do
 				built({created_entity = am})
@@ -119,9 +121,12 @@ end
 function change_signal(data, signal_color)
 	local entity = data.entity
 	local signal = data.signal
+	if show_bottlenecks ~= true then
+		signal_color = "blank-bottleneck"
+	end
 	if signal.name ~= signal_color then
 		signal.destroy()
-		data.signal = entity.surface.create_entity({ name = signal_color, position = entity.position })
+		data.signal = entity.surface.create_entity({ name = signal_color, position = get_bottleneck_position_for(entity) })
 	end
 end
 
@@ -180,24 +185,24 @@ end
 function built(event)
 	local entity = event.created_entity
 	local surface = entity.surface
-	
+
 	-- If the entity that's been built is an assembly machine or a furnace...
 	if entity.type == "assembling-machine" then
-		local signal = surface.create_entity({ name = "red-bottleneck", position = entity.position })
+		local signal = surface.create_entity({ name = "red-bottleneck", position = get_bottleneck_position_for(entity)})
 		table.insert(global.overlays, {
 			entity = entity,
 			signal = signal,
 			update = update_machine,
 		})
 	elseif entity.type == "furnace" then
-		local signal = surface.create_entity({ name = "red-bottleneck", position = entity.position })
+		local signal = surface.create_entity({ name = "red-bottleneck", position = get_bottleneck_position_for(entity)})
 		table.insert(global.overlays, {
 			entity = entity,
 			signal = signal,
 			update = update_furnace,
 		})
 	elseif entity.type == "mining-drill" then
-		local signal = surface.create_entity({ name = "red-bottleneck", position = entity.position })
+		local signal = surface.create_entity({ name = "red-bottleneck", position = get_bottleneck_position_for(entity)})
 		table.insert(global.overlays, {
 			entity = entity,
 			signal = signal,
@@ -207,9 +212,26 @@ function built(event)
 	end
 end
 
+--[[ Calculates bottom center of the entity to place bottleneck there ]]
+function get_bottleneck_position_for(entity)
+	local left_top = entity.prototype.selection_box.left_top
+	local right_bottom = entity.prototype.selection_box.right_bottom
+	--Calculating center of the selection box
+	local shift_x = (right_bottom.x + left_top.x) / 2
+	local shift_y = right_bottom.y
+	--Calculating bottom center of the selection box
+	local bottleneck_position = {x = entity.position.x + shift_x, y = entity.position.y + shift_y}
+	return bottleneck_position --entity.position
+end
+
+function on_hotkey(event)
+	show_bottlenecks = not show_bottlenecks
+end
+
 --[[ Setup event handlers ]]--
 script.on_init(init)
 script.on_configuration_changed(init)
 script.on_event(defines.events.on_tick, on_tick)
 script.on_event(defines.events.on_built_entity, built)
 script.on_event(defines.events.on_robot_built_entity, built)
+script.on_event("bottleneck-hotkey", on_hotkey)

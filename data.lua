@@ -14,7 +14,7 @@ data:extend(
             priority = "extra-high",
             width = 32,
             height = 32,
-            shift = {-0.5, 0.7}
+            shift = {-0.5, -0.3}
         }
     },
     {
@@ -31,7 +31,7 @@ data:extend(
             priority = "extra-high",
             width = 32,
             height = 32,
-            shift = {-0.5, 0.7}
+            shift = {-0.5, -0.3}
         }
     },
     {
@@ -48,7 +48,31 @@ data:extend(
             priority = "extra-high",
             width = 32,
             height = 32,
-            shift = {-0.5, 0.7}
+            shift = {-0.5, -0.3}
         }
     },
+    {
+        type = "decorative",
+        name = "blank-bottleneck",
+        flags = {"placeable-neutral", "player-creation", "not-repairable"},
+        icon = "__Bottleneck__/graphics/blank.png",
+        order = 'z[blank-bottleneck]',
+		render_layer = "higher-object-above",
+
+        pictures =
+        {
+            filename = "__Bottleneck__/graphics/blank.png",
+            priority = "extra-high",
+            width = 32,
+            height = 32,
+            shift = {-0.5, -0.3}
+        }
+    },
+  
+  {
+    type = "custom-input",
+    name = "bottleneck-hotkey",
+    key_sequence = "B",
+    consuming = "script-only"
+  }
 })
