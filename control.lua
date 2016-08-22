@@ -13,8 +13,8 @@ function init()
 	-- Check if old version loaded
 	--]]
 	if (global.overlays ~= nil) then
-		if (global.version == nil) or (global.version ~= "0.2.2") then
-			global.version = "0.2.2"
+		if (global.version == nil) or (global.version ~= "0.2.3") then
+			global.version = "0.2.3"
 			for _, data in pairs(global.overlays) do
 				if data.signal then
 					data.signal.destroy()
@@ -93,33 +93,31 @@ end
 
 function on_tick(event)
 	local overlays = global.overlays
-	if (#overlays > 0) then
-		local index = global.update_index or 0
-		-- only perform 40 updates per tick
-		-- todo: put the magic 40 into config
-		for i = 1,40 do
-			index = index + 1
-			if index > #overlays then
-				index = 1
-			end
-
-			local data = overlays[index]
-
-			local entity = data.entity
-			local signal = data.signal
-
-			-- if entity is valid, update it, otherwise remove the signal and the associated data
-			if entity.valid then
-				data.update(data)
-			else
-				if signal then 
-					signal.destroy()
-				end
-				table.remove(overlays, index)
-			end
+	local index = global.update_index or 0
+	-- only perform 40 updates per tick
+	-- todo: put the magic 40 into config
+	for i = 1,math.min(40,#overlays) do
+		index = index + 1
+		if index > #overlays then
+			index = 1
 		end
-		global.update_index = index
+
+		local data = overlays[index]
+
+		local entity = data.entity
+		local signal = data.signal
+
+		-- if entity is valid, update it, otherwise remove the signal and the associated data
+		if entity.valid then
+			data.update(data)
+		else
+			if signal then 
+				signal.destroy()
+			end
+			table.remove(overlays, index)
+		end
 	end
+	global.update_index = index
 end
 
 function change_signal(data, signal_color)
@@ -156,7 +154,6 @@ end
 
 function update_machine(data)
 	local entity = data.entity
-	local progress = data.progress
 
 	if entity.energy == 0 then
 		change_signal(data, "red-bottleneck")
