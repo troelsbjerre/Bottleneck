@@ -16,7 +16,9 @@ function init()
 		if (global.version == nil) or (global.version ~= "0.2.2") then
 			global.version = "0.2.2"
 			for _, data in pairs(global.overlays) do
-				data.signal.destroy()
+				if data.signal then
+					data.signal.destroy()
+				end
 			end
 			global.overlays = nil
 		end
@@ -110,7 +112,9 @@ function on_tick(event)
 			if entity.valid then
 				data.update(data)
 			else
-				signal.destroy()
+				if signal then 
+					signal.destroy()
+				end
 				table.remove(overlays, index)
 			end
 		end
@@ -121,12 +125,18 @@ end
 function change_signal(data, signal_color)
 	local entity = data.entity
 	local signal = data.signal
-	if show_bottlenecks ~= true then
-		signal_color = "blank-bottleneck"
-	end
-	if signal.name ~= signal_color then
-		signal.destroy()
-		data.signal = entity.surface.create_entity({ name = signal_color, position = get_bottleneck_position_for(entity) })
+	if show_bottlenecks then
+		if (not signal) or signal.name ~= signal_color then
+			if signal then
+				signal.destroy()
+			end
+			data.signal = entity.surface.create_entity({ name = signal_color, position = get_bottleneck_position_for(entity) })
+		end
+	else
+		if signal then
+			signal.destroy()
+			data.signal = nil
+		end
 	end
 end
 
