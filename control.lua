@@ -132,7 +132,7 @@ function change_signal(data, signal_color)
 			if signal then
 				signal.destroy()
 			end
-			data.signal = entity.surface.create_entity({ name = signal_color, position = get_bottleneck_position_for(entity) })
+			data.signal = entity.surface.create_entity({ name = signal_color, position = data.position })
 		end
 	else
 		if signal then
@@ -196,30 +196,21 @@ end
 function built(event)
 	local entity = event.created_entity
 	local surface = entity.surface
+	local data = nil
 
 	-- If the entity that's been built is an assembly machine or a furnace...
 	if entity.type == "assembling-machine" then
-		local signal = surface.create_entity({ name = "red-bottleneck", position = get_bottleneck_position_for(entity)})
-		table.insert(global.overlays, {
-			entity = entity,
-			signal = signal,
-			update = update_machine,
-		})
+		data = { update = update_machine }
 	elseif entity.type == "furnace" then
-		local signal = surface.create_entity({ name = "red-bottleneck", position = get_bottleneck_position_for(entity)})
-		table.insert(global.overlays, {
-			entity = entity,
-			signal = signal,
-			update = update_furnace,
-		})
+		data = { update = update_furnace }
 	elseif entity.type == "mining-drill" then
-		local signal = surface.create_entity({ name = "red-bottleneck", position = get_bottleneck_position_for(entity)})
-		table.insert(global.overlays, {
-			entity = entity,
-			signal = signal,
-			progress = 0,
-			update = update_drill,
-		})
+		data = { update = update_drill }
+	end
+	if data then
+		data.entity = entity
+		data.position = get_bottleneck_position_for(entity)
+		data.update(data)
+		table.insert(global.overlays, data)
 	end
 end
 
