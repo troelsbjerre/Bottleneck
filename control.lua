@@ -13,8 +13,8 @@ function init()
 	-- Check if old version loaded
 	--]]
 	if (global.overlays ~= nil) then
-		if (global.version == nil) or (global.version ~= "0.2.3") then
-			global.version = "0.2.3"
+		if (global.version == nil) or (global.version ~= "0.2.4") then
+			global.version = "0.2.4"
 			for _, data in pairs(global.overlays) do
 				if data.signal then
 					data.signal.destroy()
@@ -103,6 +103,10 @@ function on_tick(event)
 		end
 
 		local data = overlays[index]
+
+		if not data then
+			break
+		end
 
 		local entity = data.entity
 		local signal = data.signal
