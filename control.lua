@@ -13,8 +13,8 @@ function init()
 	-- Check if old version loaded
 	--]]
 	if (global.overlays ~= nil) then
-		if (global.version == nil) or (global.version ~= "0.2.4") then
-			global.version = "0.2.4"
+		if (global.version == nil) or (global.version ~= "0.2.6") then
+			global.version = "0.2.6"
 			for _, data in pairs(global.overlays) do
 				if data.signal then
 					data.signal.destroy()
