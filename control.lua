@@ -19,8 +19,8 @@ function init()
 	-- Check if old version loaded
 	--]]
 	if (global.overlays ~= nil) then
-		if (global.version == nil) or (global.version ~= "0.3.0") then
-			global.version = "0.3.0"
+		if (global.version == nil) or (global.version ~= "0.3.1") then
+			global.version = "0.3.1"
 			for _, data in pairs(global.overlays) do
 				if data.signal then
 					data.signal.destroy()
@@ -219,7 +219,9 @@ function built(event)
 	if data then
 		data.entity = entity
 		data.position = get_bottleneck_position_for(entity)
-		data.update(data)
+		if show_bottlenecks == 1 then
+			data.update(data)
+		end
 		table.insert(global.overlays, data)
 	end
 end
