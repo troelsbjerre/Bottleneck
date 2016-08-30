@@ -1,6 +1,12 @@
 require "util"
 
-local show_bottlenecks = true
+local show_bottlenecks = 1
+--[[
+--Possible values of show_bottlenecks:
+--  1: update normally
+--  0: don't update
+-- -1: remove all signals at next tick, and don't update afterwards
+--]]
 
 function msg(message)
 	for _,p in pairs(game.players) do
@@ -13,8 +19,8 @@ function init()
 	-- Check if old version loaded
 	--]]
 	if (global.overlays ~= nil) then
-		if (global.version == nil) or (global.version ~= "0.2.4") then
-			global.version = "0.2.4"
+		if (global.version == nil) or (global.version ~= "0.3.0") then
+			global.version = "0.3.0"
 			for _, data in pairs(global.overlays) do
 				if data.signal then
 					data.signal.destroy()
@@ -93,52 +99,56 @@ end
 
 function on_tick(event)
 	local overlays = global.overlays
-	local index = global.update_index or 0
-	-- only perform 40 updates per tick
-	-- todo: put the magic 40 into config
-	for i = 1,math.min(40,#overlays) do
-		index = index + 1
-		if index > #overlays then
-			index = 1
-		end
-
-		local data = overlays[index]
-
-		if not data then
-			break
-		end
-
-		local entity = data.entity
-		local signal = data.signal
-
-		-- if entity is valid, update it, otherwise remove the signal and the associated data
-		if entity.valid then
-			data.update(data)
-		else
-			if signal then 
-				signal.destroy()
+	if show_bottlenecks == 1 then
+		local index = global.update_index or 0
+		-- only perform 40 updates per tick
+		-- todo: put the magic 40 into config
+		for i = 1,math.min(40,#overlays) do
+			index = index + 1
+			if index > #overlays then
+				index = 1
 			end
-			table.remove(overlays, index)
+
+			local data = overlays[index]
+
+			if not data then
+				break
+			end
+
+			local entity = data.entity
+			local signal = data.signal
+
+			-- if entity is valid, update it, otherwise remove the signal and the associated data
+			if entity.valid then
+				data.update(data)
+			else
+				if signal then 
+					signal.destroy()
+				end
+				table.remove(overlays, index)
+			end
 		end
+		global.update_index = index
+	elseif show_bottlenecks == -1 then
+		for index = 1, #overlays do
+			local data = overlays[index]
+			if data.signal then
+				data.signal.destroy()
+				data.signal = nil
+			end
+		end
+		show_bottlenecks = 0
 	end
-	global.update_index = index
 end
 
 function change_signal(data, signal_color)
 	local entity = data.entity
 	local signal = data.signal
-	if show_bottlenecks then
-		if (not signal) or signal.name ~= signal_color then
-			if signal then
-				signal.destroy()
-			end
-			data.signal = entity.surface.create_entity({ name = signal_color, position = data.position })
-		end
-	else
+	if (not signal) or signal.name ~= signal_color then
 		if signal then
 			signal.destroy()
-			data.signal = nil
 		end
+		data.signal = entity.surface.create_entity({ name = signal_color, position = data.position })
 	end
 end
 
@@ -227,7 +237,11 @@ function get_bottleneck_position_for(entity)
 end
 
 function on_hotkey(event)
-	show_bottlenecks = not show_bottlenecks
+	if show_bottlenecks == 1 then
+		show_bottlenecks = -1
+	elseif show_bottlenecks == 0 then
+		show_bottlenecks = 1
+	end
 end
 
 --[[ Setup event handlers ]]--
