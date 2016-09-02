@@ -19,11 +19,12 @@ function init()
 	-- Check if old version loaded
 	--]]
 	if (global.overlays ~= nil) then
-		if (global.version == nil) or (global.version ~= "0.3.1") then
-			global.version = "0.3.1"
+		if (global.version == nil) or (global.version ~= "0.3.2") then
+			global.version = "0.3.2"
 			for _, data in pairs(global.overlays) do
-				if data.signal then
-					data.signal.destroy()
+				local signal = data.signal
+				if signal and signal.valid then
+					signal.destroy()
 				end
 			end
 			global.overlays = nil
@@ -68,30 +69,32 @@ function init()
 				end
 			end
 
-			--[[
-			Bounds are given from min and max values. Must add 32 to max, since chunk coordinates times 32 are smallest (x,y) of that chunk
-			]]--
-			local bounds = {{min_x*32,min_y*32},{max_x*32+32,max_y*32+32}}
+			if min_x then
+				--[[
+				Bounds are given from min and max values. Must add 32 to max, since chunk coordinates times 32 are smallest (x,y) of that chunk
+				]]--
+				local bounds = {{min_x*32,min_y*32},{max_x*32+32,max_y*32+32}}
 
-			--[[
-			Find all assembling machines within the bounds, and pretend that they were just built
-			]]--
-			for _, am in pairs(surface.find_entities_filtered{area=bounds, type="assembling-machine"}) do
-				built({created_entity = am})
-			end
+				--[[
+				Find all assembling machines within the bounds, and pretend that they were just built
+				]]--
+				for _, am in pairs(surface.find_entities_filtered{area=bounds, type="assembling-machine"}) do
+					built({created_entity = am})
+				end
 
-			--[[
-			Find all furnaces within the bounds, and pretend that they were just built
-			]]--
-			for _, am in pairs(surface.find_entities_filtered{area=bounds, type="furnace"}) do
-				built({created_entity = am})
-			end
+				--[[
+				Find all furnaces within the bounds, and pretend that they were just built
+				]]--
+				for _, am in pairs(surface.find_entities_filtered{area=bounds, type="furnace"}) do
+					built({created_entity = am})
+				end
 
-			--[[
-			Find all mining-drills within the bounds, and pretend that they were just built
-			]]--
-			for _, am in pairs(surface.find_entities_filtered{area=bounds, type="mining-drill"}) do
-				built({created_entity = am})
+				--[[
+				Find all mining-drills within the bounds, and pretend that they were just built
+				]]--
+				for _, am in pairs(surface.find_entities_filtered{area=bounds, type="mining-drill"}) do
+					built({created_entity = am})
+				end
 			end
 		end
 	end
@@ -122,20 +125,22 @@ function on_tick(event)
 			if entity.valid then
 				data.update(data)
 			else
-				if signal then 
+				if signal and signal.valid then
 					signal.destroy()
 				end
 				table.remove(overlays, index)
+				index = index - 1 -- since we would otherwise skip the element moved down to position 'index'
 			end
 		end
 		global.update_index = index
 	elseif show_bottlenecks == -1 then
 		for index = 1, #overlays do
 			local data = overlays[index]
-			if data.signal then
+			local signal = data.signal
+			if signal and signal.valid then
 				data.signal.destroy()
-				data.signal = nil
 			end
+			data.signal = nil
 		end
 		show_bottlenecks = 0
 	end
@@ -145,7 +150,7 @@ function change_signal(data, signal_color)
 	local entity = data.entity
 	local signal = data.signal
 	if (not signal) or signal.name ~= signal_color then
-		if signal then
+		if signal and signal.valid then
 			signal.destroy()
 		end
 		data.signal = entity.surface.create_entity({ name = signal_color, position = data.position })
