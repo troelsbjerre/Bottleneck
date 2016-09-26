@@ -19,8 +19,8 @@ function init()
 	-- Check if old version loaded
 	--]]
 	if (global.overlays ~= nil) then
-		if (global.version == nil) or (global.version ~= "0.3.2") then
-			global.version = "0.3.2"
+		if (global.version == nil) or (global.version ~= "0.3.3") then
+			global.version = "0.3.3"
 			for _, data in pairs(global.overlays) do
 				local signal = data.signal
 				if signal and signal.valid then
@@ -149,7 +149,7 @@ end
 function change_signal(data, signal_color)
 	local entity = data.entity
 	local signal = data.signal
-	if (not signal) or signal.name ~= signal_color then
+	if (not signal) or (not signal.valid) or signal.name ~= signal_color then
 		if signal and signal.valid then
 			signal.destroy()
 		end
