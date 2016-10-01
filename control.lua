@@ -1,12 +1,6 @@
 require "util"
 
-local show_bottlenecks = 1
---[[
---Possible values of show_bottlenecks:
---  1: update normally
---  0: don't update
--- -1: remove all signals at next tick, and don't update afterwards
---]]
+local show_bottlenecks = true
 
 function msg(message)
 	for _,p in pairs(game.players) do
@@ -16,11 +10,11 @@ end
 
 function init()
 	--[[
-	-- Check if old version loaded
+	-- Check if old version loaded. As of 0.4.0, this only gets updated when data format changes.
 	--]]
 	if (global.overlays ~= nil) then
-		if (global.version == nil) or (global.version ~= "0.3.3") then
-			global.version = "0.3.3"
+		if (global.version == nil) or (global.version ~= "0.4") then
+			global.version = "0.4"
 			for _, data in pairs(global.overlays) do
 				local signal = data.signal
 				if signal and signal.valid then
@@ -102,48 +96,40 @@ end
 
 function on_tick(event)
 	local overlays = global.overlays
-	if show_bottlenecks == 1 then
-		local index = global.update_index or 0
-		-- only perform 40 updates per tick
-		-- todo: put the magic 40 into config
-		for i = 1,math.min(40,#overlays) do
-			index = index + 1
-			if index > #overlays then
-				index = 1
-			end
-
-			local data = overlays[index]
-
-			if not data then
-				break
-			end
-
-			local entity = data.entity
-			local signal = data.signal
-
-			-- if entity is valid, update it, otherwise remove the signal and the associated data
-			if entity.valid then
-				data.update(data)
-			else
-				if signal and signal.valid then
-					signal.destroy()
-				end
-				table.remove(overlays, index)
-				index = index - 1 -- since we would otherwise skip the element moved down to position 'index'
-			end
+	local index = global.update_index or 0
+	-- only perform 40 updates per tick
+	-- todo: put the magic 40 into config
+	for i = 1, math.min(40,#overlays) do
+		index = index + 1
+		if index > #overlays then
+			index = 1
 		end
-		global.update_index = index
-	elseif show_bottlenecks == -1 then
-		for index = 1, #overlays do
-			local data = overlays[index]
-			local signal = data.signal
+
+		local data = overlays[index]
+
+		if not data then
+			break
+		end
+
+		local entity = data.entity
+		local signal = data.signal
+
+		-- if entity is valid, update it, otherwise remove the signal and the associated data
+		if not show_bottlenecks then
 			if signal and signal.valid then
-				data.signal.destroy()
+				signal.destroy()
 			end
-			data.signal = nil
+		elseif entity.valid then
+			data.update(data)
+		else
+			if signal and signal.valid then
+				signal.destroy()
+			end
+			table.remove(overlays, index)
+			index = index - 1 -- since we would otherwise skip the element moved down to position 'index'
 		end
-		show_bottlenecks = 0
 	end
+	global.update_index = index
 end
 
 function change_signal(data, signal_color)
@@ -158,11 +144,13 @@ function change_signal(data, signal_color)
 end
 
 function update_drill(data)
+	if data.drill_depleted then return end
 	local entity = data.entity
 	local progress = data.progress
 
-	if (entity.mining_target == nil) or (entity.energy == 0) then
+	if (entity.energy == 0) or (entity.mining_target == nil and check_drill(data)) then
 		change_signal(data, "red-bottleneck")
+		data.drill_depleted = true
 	elseif (entity.mining_progress == progress) then
 		change_signal(data, "yellow-bottleneck")
 	else
@@ -182,7 +170,9 @@ function update_machine(data)
 		change_signal(data, "green-bottleneck")
 	elseif (entity.crafting_progress >= 1) -- has a full output buffer
 		or (entity.bonus_progress >= 1) -- has a full bonus buffer
-		or (entity.get_inventory(defines.inventory.assembling_machine_output).get_item_count() > 0) then
+		--or (entity.get_inventory(defines.inventory.assembling_machine_output).get_item_count() > 0) then
+		-- or (not entity.get_output_inventory().is_empty()) then
+		or (check_recipe(entity)) then
 		change_signal(data, "yellow-bottleneck")
 	else
 		change_signal(data, "red-bottleneck")
@@ -200,7 +190,7 @@ function update_furnace(data)
 		change_signal(data, "green-bottleneck")
 	elseif (entity.crafting_progress >= 1) -- has a full output buffer
 		or (entity.bonus_progress >= 1) -- has a full bonus buffer
-		or (entity.get_inventory(defines.inventory.furnace_result).get_item_count() > 0) then
+		or (check_recipe(entity)) then
 		change_signal(data, "yellow-bottleneck")
 	else
 		change_signal(data, "red-bottleneck")
@@ -224,7 +214,7 @@ function built(event)
 	if data then
 		data.entity = entity
 		data.position = get_bottleneck_position_for(entity)
-		if show_bottlenecks == 1 then
+		if show_bottlenecks then
 			data.update(data)
 		end
 		table.insert(global.overlays, data)
@@ -243,12 +233,58 @@ function get_bottleneck_position_for(entity)
 	return bottleneck_position --entity.position
 end
 
-function on_hotkey(event)
-	if show_bottlenecks == 1 then
-		show_bottlenecks = -1
-	elseif show_bottlenecks == 0 then
-		show_bottlenecks = 1
+--[[ code modified from AutoDeconstruct mod by mindmix https://mods.factorio.com/mods/mindmix ]]
+function check_drill(data)
+	local drill = data.entity
+	local position = drill.position
+	local range = drill.prototype.mining_drill_radius
+	local top_left = {x = position.x - range, y = position.y - range}
+	local bottom_right = {x = position.x + range, y = position.y + range}
+	local resources = drill.surface.find_entities_filtered{area={top_left, bottom_right}, type='resource'}
+	for _, resource in pairs(resources) do
+		if resource.prototype.resource_category == 'basic-solid' and  resource.amount > 0 then 
+			return false
+		end
 	end
+	return true
+end
+
+function check_recipe(entity)
+	local recipe = entity.recipe
+	if not recipe then return false end
+	local output = entity.get_output_inventory()
+	local fluidbox = entity.fluidbox
+	for _, product in pairs(recipe.products) do
+		if product.type == 'item' then
+			if not output.get_item_count(product.name) then 
+				return false 
+			end
+		else
+			if not find_fluid(product.name, fluidbox) then
+				return false
+			end
+		end
+	end
+	return true
+end
+
+function find_fluid(name,fluidbox)
+	if (not name) then return true end
+	if (not fluidbox) then return false end
+	for i = 1, #fluidbox do
+		local fluid = fluidbox[i]
+		if fluid and (fluid.type == name) and (fluid.amount > 0) then return true end
+	end
+	return false
+end
+
+function on_hotkey(event)
+	local player = game.players[event.player_index]
+	if not player.admin then
+		player.print('Bottleneck: you do not have privileges to toggle bottleneck')
+		return
+	end
+	show_bottlenecks = not show_bottlenecks
 end
 
 --[[ Setup event handlers ]]--
