@@ -1,6 +1,6 @@
 require "util"
 
-local show_bottlenecks = true
+local show_bottlenecks = 1
 
 function msg(message)
 	for _,p in pairs(game.players) do
@@ -95,41 +95,64 @@ function init()
 end
 
 function on_tick(event)
-	local overlays = global.overlays
-	local index = global.update_index or 0
-	-- only perform 40 updates per tick
-	-- todo: put the magic 40 into config
-	for i = 1, math.min(40,#overlays) do
-		index = index + 1
-		if index > #overlays then
-			index = 1
+	if show_bottlenecks == 1 then
+		local overlays = global.overlays
+		local index = global.update_index or 0
+		local numiter = math.min(40,#overlays) 
+		-- only perform 40 updates per tick
+		-- todo: put the magic 40 into config
+		for i = 1, numiter do
+			index = index + 1
+			if index > #overlays then
+				index = 1
+			end
+
+			local data = overlays[index]
+
+			if not data then
+				break
+			end
+
+			local entity = data.entity
+			local signal = data.signal
+
+			-- if entity is valid, update it, otherwise remove the signal and the associated data
+			if entity.valid then
+				data.update(data)
+			else
+				if signal and signal.valid then
+					signal.destroy()
+				end
+				table.remove(overlays, index)
+				index = index - 1 -- since we would otherwise skip the element moved down to position 'index'
+			end
 		end
+		global.update_index = index
+	elseif show_bottlenecks == -1 then
+		local overlays = global.overlays
+		local fromindex = (global.update_index or 0)+1
+		local toindex = math.min(fromindex+39,#overlays) 
+		-- only perform 40 updates per tick
+		-- todo: put the magic 40 into config
+		for index = fromindex,toindex do
+			local data = overlays[index]
 
-		local data = overlays[index]
+			if not data then
+				break
+			end
 
-		if not data then
-			break
-		end
+			local signal = data.signal
 
-		local entity = data.entity
-		local signal = data.signal
-
-		-- if entity is valid, update it, otherwise remove the signal and the associated data
-		if not show_bottlenecks then
+			-- if entity is valid, update it
 			if signal and signal.valid then
 				signal.destroy()
 			end
-		elseif entity.valid then
-			data.update(data)
-		else
-			if signal and signal.valid then
-				signal.destroy()
-			end
-			table.remove(overlays, index)
-			index = index - 1 -- since we would otherwise skip the element moved down to position 'index'
+		end
+		global.update_index = toindex
+		if toindex >= #overlays then
+			show_bottlenecks = 0
 		end
 	end
-	global.update_index = index
 end
 
 function change_signal(data, signal_color)
@@ -170,9 +193,8 @@ function update_machine(data)
 		change_signal(data, "green-bottleneck")
 	elseif (entity.crafting_progress >= 1) -- has a full output buffer
 		or (entity.bonus_progress >= 1) -- has a full bonus buffer
-		--or (entity.get_inventory(defines.inventory.assembling_machine_output).get_item_count() > 0) then
-		-- or (not entity.get_output_inventory().is_empty()) then
-		or (check_recipe(entity)) then
+		or (not entity.get_output_inventory().is_empty())
+		or (has_fluid_output_available(entity)) then
 		change_signal(data, "yellow-bottleneck")
 	else
 		change_signal(data, "red-bottleneck")
@@ -190,7 +212,8 @@ function update_furnace(data)
 		change_signal(data, "green-bottleneck")
 	elseif (entity.crafting_progress >= 1) -- has a full output buffer
 		or (entity.bonus_progress >= 1) -- has a full bonus buffer
-		or (check_recipe(entity)) then
+		or (not entity.get_output_inventory().is_empty())
+		or (has_fluid_output_available(entity)) then
 		change_signal(data, "yellow-bottleneck")
 	else
 		change_signal(data, "red-bottleneck")
@@ -214,7 +237,7 @@ function built(event)
 	if data then
 		data.entity = entity
 		data.position = get_bottleneck_position_for(entity)
-		if show_bottlenecks then
+		if show_bottlenecks == 1 then
 			data.update(data)
 		end
 		table.insert(global.overlays, data)
@@ -249,31 +272,21 @@ function check_drill(data)
 	return true
 end
 
-function check_recipe(entity)
+function has_fluid_output_available(entity)
+	local fluidbox = entity.fluidbox
+	if (not fluidbox) or (#fluidbox == 0) then return false end
 	local recipe = entity.recipe
 	if not recipe then return false end
-	local output = entity.get_output_inventory()
-	local fluidbox = entity.fluidbox
 	for _, product in pairs(recipe.products) do
-		if product.type == 'item' then
-			if not output.get_item_count(product.name) then 
-				return false 
-			end
-		else
-			if not find_fluid(product.name, fluidbox) then
-				return false
+		if product.type == 'fluid' then
+			local name = product.name
+			for i = 1, #fluidbox do
+				local fluid = fluidbox[i]
+				if fluid and (fluid.type == name) and (fluid.amount > 0) then 
+					return true
+				end
 			end
 		end
-	end
-	return true
-end
-
-function find_fluid(name,fluidbox)
-	if (not name) then return true end
-	if (not fluidbox) then return false end
-	for i = 1, #fluidbox do
-		local fluid = fluidbox[i]
-		if fluid and (fluid.type == name) and (fluid.amount > 0) then return true end
 	end
 	return false
 end
@@ -284,7 +297,12 @@ function on_hotkey(event)
 		player.print('Bottleneck: you do not have privileges to toggle bottleneck')
 		return
 	end
-	show_bottlenecks = not show_bottlenecks
+	global.update_index = 0
+	if show_bottlenecks == 1 then
+		show_bottlenecks = -1
+	else
+		show_bottlenecks = 1
+	end
 end
 
 --[[ Setup event handlers ]]--
