@@ -10,11 +10,11 @@ end
 
 function init()
 	--[[
-	-- Check if old version loaded. As of 0.4.0, this only gets updated when data format changes.
+	-- Check if old version loaded.
 	--]]
 	if (global.overlays ~= nil) then
-		if (global.version == nil) or (global.version ~= "0.4") then
-			global.version = "0.4"
+		if (global.version == nil) or (global.version ~= "0.4.3") then
+			global.version = "0.4.3"
 			for _, data in pairs(global.overlays) do
 				local signal = data.signal
 				if signal and signal.valid then
@@ -171,9 +171,8 @@ function update_drill(data)
 	local entity = data.entity
 	local progress = data.progress
 
-	if (entity.energy == 0) or (entity.mining_target == nil and check_drill(data)) then
+	if (entity.energy == 0) or (entity.mining_target == nil and check_drill_depleted(data)) then
 		change_signal(data, "red-bottleneck")
-		data.drill_depleted = true
 	elseif (entity.mining_progress == progress) then
 		change_signal(data, "yellow-bottleneck")
 	else
@@ -257,7 +256,7 @@ function get_bottleneck_position_for(entity)
 end
 
 --[[ code modified from AutoDeconstruct mod by mindmix https://mods.factorio.com/mods/mindmix ]]
-function check_drill(data)
+function check_drill_depleted(data)
 	local drill = data.entity
 	local position = drill.position
 	local range = drill.prototype.mining_drill_radius
@@ -269,6 +268,7 @@ function check_drill(data)
 			return false
 		end
 	end
+	data.drill_depleted = true
 	return true
 end
 
