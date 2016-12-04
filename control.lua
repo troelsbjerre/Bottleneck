@@ -9,12 +9,15 @@ function msg(message)
 end
 
 function init()
+	if (global.output_idle_signal == nil) then
+		global.output_idle_signal = "yellow-bottleneck"
+	end
 	--[[
 	-- Check if old version loaded.
 	--]]
 	if (global.overlays ~= nil) then
-		if (global.version == nil) or (global.version ~= "0.4.3") then
-			global.version = "0.4.3"
+		if (global.version == nil) or (global.version ~= "0.4.4") then
+			global.version = "0.4.4"
 			for _, data in pairs(global.overlays) do
 				local signal = data.signal
 				if signal and signal.valid then
@@ -174,7 +177,7 @@ function update_drill(data)
 	if (entity.energy == 0) or (entity.mining_target == nil and check_drill_depleted(data)) then
 		change_signal(data, "red-bottleneck")
 	elseif (entity.mining_progress == progress) then
-		change_signal(data, "yellow-bottleneck")
+		change_signal(data, global.output_idle_signal)
 	else
 		change_signal(data, "green-bottleneck")
 		data.progress = entity.mining_progress
@@ -194,7 +197,7 @@ function update_machine(data)
 		or (entity.bonus_progress >= 1) -- has a full bonus buffer
 		or (not entity.get_output_inventory().is_empty())
 		or (has_fluid_output_available(entity)) then
-		change_signal(data, "yellow-bottleneck")
+		change_signal(data, global.output_idle_signal)
 	else
 		change_signal(data, "red-bottleneck")
 	end
@@ -213,7 +216,7 @@ function update_furnace(data)
 		or (entity.bonus_progress >= 1) -- has a full bonus buffer
 		or (not entity.get_output_inventory().is_empty())
 		or (has_fluid_output_available(entity)) then
-		change_signal(data, "yellow-bottleneck")
+		change_signal(data, global.output_idle_signal)
 	else
 		change_signal(data, "red-bottleneck")
 	end
@@ -305,6 +308,17 @@ function on_hotkey(event)
 	end
 end
 
+function toggle_highcontrast(event)
+	local player = game.players[event.player_index]
+	if global.output_idle_signal ~= "yellow-bottleneck" then
+		global.output_idle_signal = "yellow-bottleneck"
+		msg('Bottleneck: high contrast mode disabled')
+	else
+		global.output_idle_signal = "blue-bottleneck"
+		msg('Bottleneck: high contrast mode enabled')
+	end
+end
+
 --[[ Setup event handlers ]]--
 script.on_init(init)
 script.on_configuration_changed(init)
@@ -312,3 +326,4 @@ script.on_event(defines.events.on_tick, on_tick)
 script.on_event(defines.events.on_built_entity, built)
 script.on_event(defines.events.on_robot_built_entity, built)
 script.on_event("bottleneck-hotkey", on_hotkey)
+script.on_event("bottleneck-highcontrast", toggle_highcontrast)
