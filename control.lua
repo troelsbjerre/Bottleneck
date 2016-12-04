@@ -16,8 +16,8 @@ function init()
 	-- Check if old version loaded.
 	--]]
 	if (global.overlays ~= nil) then
-		if (global.version == nil) or (global.version ~= "0.4.4") then
-			global.version = "0.4.4"
+		if (global.version == nil) or (global.version ~= "0.4.5") then
+			global.version = "0.4.5"
 			for _, data in pairs(global.overlays) do
 				local signal = data.signal
 				if signal and signal.valid then
@@ -35,7 +35,7 @@ function init()
 
 	if global.overlays == nil then
 		global.overlays = {}
-		msg("bottleneck: building data from scratch")
+		msg("Bottleneck: building data from scratch")
 
 		--[[
 		Find all assembling machines on the map.
