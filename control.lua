@@ -16,8 +16,9 @@ function init()
 	-- Check if old version loaded.
 	--]]
 	if (global.overlays ~= nil) then
-		if (global.version == nil) or (global.version ~= "0.4.5") then
-			global.version = "0.4.5"
+		if (global.version == nil) or (global.version ~= "0.5.0") then
+			global.version = "0.5.0"
+			global.update_index = nil
 			for _, data in pairs(global.overlays) do
 				local signal = data.signal
 				if signal and signal.valid then
@@ -73,6 +74,22 @@ function init()
 				local bounds = {{min_x*32,min_y*32},{max_x*32+32,max_y*32+32}}
 
 				--[[
+				destroy any existing bottleneck-signals
+				]]--
+				for _, signal in pairs(surface.find_entities_filtered{area=bounds, name="green-bottleneck"}) do
+					signal.destroy()
+				end
+				for _, signal in pairs(surface.find_entities_filtered{area=bounds, name="yellow-bottleneck"}) do
+					signal.destroy()
+				end
+				for _, signal in pairs(surface.find_entities_filtered{area=bounds, name="red-bottleneck"}) do
+					signal.destroy()
+				end
+				for _, signal in pairs(surface.find_entities_filtered{area=bounds, name="blue-bottleneck"}) do
+					signal.destroy()
+				end
+
+				--[[
 				Find all assembling machines within the bounds, and pretend that they were just built
 				]]--
 				for _, am in pairs(surface.find_entities_filtered{area=bounds, type="assembling-machine"}) do
@@ -100,22 +117,15 @@ end
 function on_tick(event)
 	if show_bottlenecks == 1 then
 		local overlays = global.overlays
-		local index = global.update_index or 0
-		local numiter = math.min(40,#overlays) 
+		local index = next(overlays, global.update_index)
+		local numiter = 0
 		-- only perform 40 updates per tick
 		-- todo: put the magic 40 into config
-		for i = 1, numiter do
-			index = index + 1
-			if index > #overlays then
-				index = 1
-			end
+		while index and (numiter < 40) do
+			-- save the next element, in case we need to remove the current index
+			local nextindex = next(overlays, index)
 
 			local data = overlays[index]
-
-			if not data then
-				break
-			end
-
 			local entity = data.entity
 			local signal = data.signal
 
@@ -126,33 +136,32 @@ function on_tick(event)
 				if signal and signal.valid then
 					signal.destroy()
 				end
-				table.remove(overlays, index)
-				index = index - 1 -- since we would otherwise skip the element moved down to position 'index'
+				overlays[index] = nil
 			end
+			numiter = numiter + 1
+			index = nextindex
 		end
 		global.update_index = index
 	elseif show_bottlenecks == -1 then
 		local overlays = global.overlays
-		local fromindex = (global.update_index or 0)+1
-		local toindex = math.min(fromindex+39,#overlays) 
+		local index = next(overlays, global.update_index)
+		local numiter = 0
 		-- only perform 40 updates per tick
 		-- todo: put the magic 40 into config
-		for index = fromindex,toindex do
+		while index and (numiter < 40) do
 			local data = overlays[index]
-
-			if not data then
-				break
-			end
-
 			local signal = data.signal
 
-			-- if entity is valid, update it
+			-- if signal exists, destroy it
 			if signal and signal.valid then
 				signal.destroy()
 			end
+			numiter = numiter + 1
+			index = next(overlays, index)
 		end
-		global.update_index = toindex
-		if toindex >= #overlays then
+		global.update_index = index
+		-- if we have reached the end of the list (i.e., have removed all lights), pause updating until enabled by hotkey next
+		if not index then
 			show_bottlenecks = 0
 		end
 	end
@@ -242,7 +251,13 @@ function built(event)
 		if show_bottlenecks == 1 then
 			data.update(data)
 		end
-		table.insert(global.overlays, data)
+		global.overlays[entity.unit_number] = data
+		-- if we are in the process of removing lights, we need to restart
+		-- that, since inserting into the overlays table may mess up the
+		-- iteration order.
+		if show_bottlenecks == -1 then
+			global.update_index = nil
+		end
 	end
 end
 
@@ -300,7 +315,7 @@ function on_hotkey(event)
 		player.print('Bottleneck: you do not have privileges to toggle bottleneck')
 		return
 	end
-	global.update_index = 0
+	global.update_index = nil
 	if show_bottlenecks == 1 then
 		show_bottlenecks = -1
 	else
@@ -319,9 +334,26 @@ function toggle_highcontrast(event)
 	end
 end
 
+function remove_light(event)
+	local entity = event.entity
+	local index = entity.unit_number
+	local overlays = global.overlays
+	local data = overlays[index]
+	if not data then return end
+	local signal = data.signal
+	if signal and signal.valid then
+		signal.destroy()
+	end
+	overlays[index] = nil
+	--table.remove(overlays, index)
+end
+
 --[[ Setup event handlers ]]--
 script.on_init(init)
 script.on_configuration_changed(init)
+script.on_event(defines.events.on_preplayer_mined_item, remove_light)
+script.on_event(defines.events.on_robot_pre_mined, remove_light)
+script.on_event(defines.events.on_entity_died, remove_light)
 script.on_event(defines.events.on_tick, on_tick)
 script.on_event(defines.events.on_built_entity, built)
 script.on_event(defines.events.on_robot_built_entity, built)
