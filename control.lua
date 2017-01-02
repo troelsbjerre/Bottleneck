@@ -125,6 +125,31 @@ function update.furnace(data)
   end
 end
 
+function update.logistic(data)
+local entity = data.entity
+local network = entity.logistic_network
+if network then
+  if entity.request_slot_count > 0 then
+    local satisfied = false
+    -- for _, ent in pairs(network.full_or_satisfied_requesters) do
+    --   if entity==ent then
+    --     satisfied = true
+    --     break
+    --   end
+    -- end
+    if satisfied then
+      change_signal(data, light.green)
+    else
+      change_signal(data, light.yellow)
+    end
+  else
+    change_signal(data, light.green)
+  end
+else
+  change_signal(data, light.red)
+end
+end
+
 --[[ A function that is called whenever an entity is built (both by player and by robots) ]]--
 local function built(event)
   local entity = event.created_entity
@@ -138,6 +163,8 @@ local function built(event)
     data = { update = "furnace" }
   elseif entity.type == "mining-drill" then
     data = { update = "drill" }
+  elseif game.entity_prototypes[entity.name].logistic_mode then
+    data = { update = "logistic"}
   end
   if data then
     data.entity = entity
@@ -154,6 +181,15 @@ local function built(event)
       global.update_index = nil
     end
   end
+end
+
+local function build_network_data()
+local networks = global.networks
+for _, network in pairs(networks) do
+  if network.valid then
+
+  end
+end
 end
 
 local function rebuild_overlays()
@@ -190,7 +226,7 @@ local function rebuild_overlays()
 end
 
 local next = next --very slight perfomance improvment
-local function on_tick()
+local function on_tick(event)
   if global.show_bottlenecks == 1 then
     local overlays = global.overlays
     local index = global.update_index
@@ -199,7 +235,7 @@ local function on_tick()
     else
       index, data = next(overlays, index)
     end
-
+    --if event.tick % 60 == 0 then build_network_data(data.network) end
     local numiter = 0
     -- only perform 40 updates per tick
     -- todo: put the magic 40 into config
