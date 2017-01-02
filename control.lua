@@ -1,6 +1,12 @@
 --Generate event ID's for custom events
 local bottleneck_toggle = script.generate_event_name()
---before changes .52
+local light = {
+  off = defines.direction.north,
+  red = defines.direction.east,
+  yellow = defines.direction.south,
+  green = defines.direction.west,
+  blue = defines.direction.northwest,
+}
 
 --Message Everyone
 local function msg(message)
@@ -71,13 +77,10 @@ local function has_fluid_output_available(entity)
 end
 
 local function change_signal(data, signal_color)
-  local entity = data.entity
+  --local entity = data.entity
   local signal = data.signal
-  if (not signal) or (not signal.valid) or signal.name ~= signal_color then
-    if signal and signal.valid then
-      signal.destroy()
-    end
-    data.signal = entity.surface.create_entity({ name = signal_color, position = data.position })
+  if (signal and signal.valid) and signal.direction ~= signal_color then
+    signal.direction=signal_color
   end
 end
 
@@ -87,11 +90,11 @@ function update.drill(data)
   local entity = data.entity
   local progress = data.progress
   if (entity.energy == 0) or (entity.mining_target == nil and check_drill_depleted(data)) then
-    change_signal(data, "red-bottleneck")
+    change_signal(data, light.red)
   elseif (entity.mining_progress == progress) then
-    change_signal(data, global.output_idle_signal)
+    change_signal(data, light.yellow)
   else
-    change_signal(data, "green-bottleneck")
+    change_signal(data, light.green)
     data.progress = entity.mining_progress
   end
 end
@@ -99,26 +102,26 @@ end
 function update.machine(data)
   local entity = data.entity
   if entity.energy == 0 then
-    change_signal(data, "red-bottleneck")
+    change_signal(data, light.red)
   elseif entity.is_crafting() and (entity.crafting_progress < 1) and (entity.bonus_progress < 1) then
-    change_signal(data, "green-bottleneck")
+    change_signal(data, light.green)
   elseif (entity.crafting_progress >= 1) or (entity.bonus_progress >= 1) or (not entity.get_output_inventory().is_empty()) or (has_fluid_output_available(entity)) then
-    change_signal(data, global.output_idle_signal)
+    change_signal(data, light.yellow)
   else
-    change_signal(data, "red-bottleneck")
+    change_signal(data, light.red)
   end
 end
 
 function update.furnace(data)
   local entity = data.entity
   if entity.energy == 0 then
-    change_signal(data, "red-bottleneck")
+    change_signal(data, light.red)
   elseif entity.is_crafting() and (entity.crafting_progress < 1) and (entity.bonus_progress < 1) then
-    change_signal(data, "green-bottleneck")
+    change_signal(data, light.green)
   elseif (entity.crafting_progress >= 1) or (entity.bonus_progress >= 1) or (not entity.get_output_inventory().is_empty()) or (has_fluid_output_available(entity)) then
-    change_signal(data, global.output_idle_signal)
+    change_signal(data, light.yellow)
   else
-    change_signal(data, "red-bottleneck")
+    change_signal(data, light.red)
   end
 end
 
@@ -139,8 +142,9 @@ local function built(event)
   if data then
     data.entity = entity
     data.position = get_bottleneck_position_for(entity)
+    data.signal = entity.surface.create_entity{name="bottleneck-icons",position=data.position,direction=light.off,force=entity.force}
     if global.show_bottlenecks == 1 then
-      update[data.update](data)
+       update[data.update](data)
     end
     global.overlays[entity.unit_number] = data
     -- if we are in the process of removing lights, we need to restart
@@ -153,62 +157,39 @@ local function built(event)
 end
 
 local function rebuild_overlays()
-  --[[
-  Setup the global overlays table
-  This table contains the machine entity, the signal entity and the freeze variable
-  ]]--
-
+  --[[Setup the global overlays table This table contains the machine entity, the signal entity and the freeze variable]]--
   global.overlays = {}
+  global.update_index = nil
   msg("Bottleneck: rebuilding data from scratch")
 
-  --[[
-  Find all assembling machines on the map.
-  Check each surface
-  ]]--
-
-  --List of true value signal names for faster iteration
-  local signal_names = {
-    ["green-bottleneck"] = true,
-    ["red-bottleneck"] = true,
-    ["yellow-bottleneck"] = true,
-    ["blue-bottleneck"] = true,
-  }
+  --[[Find all assembling machines on the map. Check each surface]]--
   for _, surface in pairs(game.surfaces) do
     --find-entities-filtered with no area argument scans for all entities in loaded chunks and should
     --be more effiecent then scanning through all chunks like in previous version
 
-    --destroy any existing bottleneck-signals
-    --loop through all decrotives once and trigger on name for more effeciency
-    for _, decorative in pairs(surface.find_entities_filtered{type="decorative"}) do
-      if signal_names[decorative.name] then
-        decorative.destroy()
-      end
+    --[[destroy any existing bottleneck-signals]]--
+    for _, stoplight in pairs(surface.find_entities_filtered{type="storage-tank", name="bottleneck-signals"}) do
+      stoplight.destroy()
     end
 
-    --[[
-    Find all assembling machines within the bounds, and pretend that they were just built
-    ]]--
+    --[[Find all assembling machines within the bounds, and pretend that they were just built]]--
     for _, am in pairs(surface.find_entities_filtered{type="assembling-machine"}) do
       built({created_entity = am})
     end
 
-    --[[
-    Find all furnaces within the bounds, and pretend that they were just built
-    ]]--
+    --[[Find all furnaces within the bounds, and pretend that they were just built]]--
     for _, am in pairs(surface.find_entities_filtered{type="furnace"}) do
       built({created_entity = am})
     end
 
-    --[[
-    Find all mining-drills within the bounds, and pretend that they were just built
-    ]]--
+    --[[Find all mining-drills within the bounds, and pretend that they were just built]]--
     for _, am in pairs(surface.find_entities_filtered{type="mining-drill"}) do
       built({created_entity = am})
     end
   end
 end
 
-local next = next  --very slight perfomance improvment
+local next = next --very slight perfomance improvment
 local function on_tick()
   if global.show_bottlenecks == 1 then
     local overlays = global.overlays
@@ -259,7 +240,7 @@ local function on_tick()
 
       -- if signal exists, destroy it
       if signal and signal.valid then
-        signal.destroy()
+        change_signal(data, light.off)
       end
       numiter = numiter + 1
       index = next(overlays, index)
@@ -291,7 +272,7 @@ local function on_hotkey(event)
   end
 end
 
-local function toggle_highcontrast(event)
+local function toggle_highcontrast(event) --luacheck: ignore
   local player = game.players[event.player_index]
   if not player.admin then
     player.print('Bottleneck: you do not have privileges to toggle contrast')
@@ -312,7 +293,7 @@ local function init()
   --seperate out init and config changed
   global = {}
   global.show_bottlenecks = 1
-  global.output_idle_signal = "yellow-bottleneck"
+  --global.output_idle_signal = "yellow-bottleneck"
   rebuild_overlays()
 end
 
@@ -325,12 +306,10 @@ local function on_configuration_changed(event)
     local changes = event.mod_changes["Bottleneck"]
     if changes ~= nil then -- THIS Mod has changed
       msg("Bottleneck Updated from ".. tostring(changes.old_version) .. " to " .. tostring(changes.new_version))
-      --This mod has changed
     end
   end
   global.show_bottlenecks = global.showbottlenecks or 1
-  global.output_idle_signal = global.output_idle_signal or "yellow-bottleneck"
-  global.update_index = nil
+  --global.output_idle_signal = global.output_idle_signal or "yellow-bottleneck"
   rebuild_overlays()
 end
 
@@ -344,7 +323,7 @@ script.on_event(defines.events.on_tick, on_tick)
 script.on_event(defines.events.on_built_entity, built)
 script.on_event(defines.events.on_robot_built_entity, built)
 script.on_event("bottleneck-hotkey", on_hotkey)
-script.on_event("bottleneck-highcontrast", toggle_highcontrast)
+--script.on_event("bottleneck-highcontrast", toggle_highcontrast)
 
 --[[ Setup remote interface]]--
 local interface = {}
