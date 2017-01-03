@@ -163,7 +163,7 @@ local function built(event)
     data = { update = "furnace" }
   elseif entity.type == "mining-drill" then
     data = { update = "drill" }
-  elseif game.entity_prototypes[entity.name].logistic_mode then
+  elseif entity.type == "logistic-container" then
     data = { update = "logistic"}
   end
   if data then
@@ -207,7 +207,11 @@ local function rebuild_overlays()
     for _, stoplight in pairs(surface.find_entities_filtered{type="storage-tank", name="bottleneck-signals"}) do
       stoplight.destroy()
     end
-
+    -- for _, am in pairs(surface.find_entities()) do
+    --   if am.type == "assembling-machine" or am.type == "furnace" or am.type == "mining-drill" or am.prototype.logistic_mode then
+    --     built({created_entity = am})
+    --   end
+    -- end
     --[[Find all assembling machines within the bounds, and pretend that they were just built]]--
     for _, am in pairs(surface.find_entities_filtered{type="assembling-machine"}) do
       built({created_entity = am})
@@ -222,24 +226,29 @@ local function rebuild_overlays()
     for _, am in pairs(surface.find_entities_filtered{type="mining-drill"}) do
       built({created_entity = am})
     end
+
+    --[[Find all logistic-chests within the bounds, and pretend that they were just built]]--
+    for _, am in pairs(surface.find_entities_filtered{type="logistic-container"}) do
+      built({created_entity = am})
+    end
   end
 end
 
 local next = next --very slight perfomance improvment
-local function on_tick(event)
+local function on_tick()
   if global.show_bottlenecks == 1 then
+    local lights_per_tick = global.lights_per_tick or 40
     local overlays = global.overlays
-    local index = global.update_index
+    local index, data = global.update_index
     if index and overlays[index] then
-      index, data = index, overlays[index]
+      --index, data = index, overlays[index]
+      data = overlays[index]
     else
       index, data = next(overlays, index)
     end
     --if event.tick % 60 == 0 then build_network_data(data.network) end
     local numiter = 0
-    -- only perform 40 updates per tick
-    -- todo: put the magic 40 into config
-    while index and (numiter < 40) do
+    while index and (numiter < lights_per_tick) do
       local entity = data.entity
       local signal = data.signal
 
@@ -258,20 +267,19 @@ local function on_tick(event)
     end
     global.update_index = index
   elseif global.show_bottlenecks == -1 then
+    local lights_per_tick = global.lights_per_tick or 40
     local overlays = global.overlays
-    local index = global.update_index
+    local index, data = global.update_index
     --Check for existing index and associated data
     if index and overlays[index] then
-      index, data = index, overlays[index]
+      data = overlays[index]
     else
       index, data = next(overlays, index)
     end
     local numiter = 0
-    -- only perform 40 updates per tick
-    -- todo: put the magic 40 into config
-    while index and (numiter < 40) do
+    while index and (numiter < lights_per_tick) do
 
-      local data = overlays[index]
+      --local data = overlays[index]
       local signal = data.signal
 
       -- if signal exists, destroy it
@@ -279,7 +287,7 @@ local function on_tick(event)
         change_signal(data, light.off)
       end
       numiter = numiter + 1
-      index = next(overlays, index)
+      index, data = next(overlays, index)
     end
     global.update_index = index
     -- if we have reached the end of the list (i.e., have removed all lights), pause updating until enabled by hotkey next
@@ -329,6 +337,7 @@ local function init()
   --seperate out init and config changed
   global = {}
   global.show_bottlenecks = 1
+  global.lights_per_tick = 40
   --global.output_idle_signal = "yellow-bottleneck"
   rebuild_overlays()
 end
@@ -336,7 +345,7 @@ end
 local function on_configuration_changed(event)
   --Any MOD has been changed/added/removed, including base game updates.
   if event.mod_changes ~= nil then --should never be nil
-    msg("Bottlneck: game or mod version changes detected")
+    msg("Bottleneck: game or mod version changes detected")
 
     --This mod has changed
     local changes = event.mod_changes["Bottleneck"]
@@ -345,6 +354,7 @@ local function on_configuration_changed(event)
     end
   end
   global.show_bottlenecks = global.showbottlenecks or 1
+  global.lights_per_tick = global.lights_per_tick or 40
   --global.output_idle_signal = global.output_idle_signal or "yellow-bottleneck"
   rebuild_overlays()
 end
@@ -371,4 +381,5 @@ interface.enabled = function() if global.show_bottlenecks == 1 then return true 
 interface.print_global = function() game.write_file("logs/Bottleneck/global.lua",serpent.block(global),false) end
 --rebuild all icons
 interface.rebuild = function() rebuild_overlays() end
+interface.lights_per_tick = function(count) global.lights_per_tick = tonumber(count) or 40 end
 remote.add_interface("Bottleneck", interface)

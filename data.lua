@@ -37,7 +37,7 @@ local test_stoplight = { --luacheck: ignore
       height = 32,
       frame_count = 3,
       direction_count = 8,
-      scale=0.5,
+      scale=0.6,
       shift = {-0.5, -0.3}
     },
     green_light = {intensity = 0.2, size = 4, color={g=1}},
@@ -73,72 +73,72 @@ local stoplight = {
       y=0,
       width = 32,
       height = 32,
-      scale=0.5,
+      scale=0.6,
       frame_count=1,
-      shift = {-0.5, -0.3}
+      shift = {-0.2, -0.3}
     },
     east = {
       filename = "__Bottleneck__/graphics/red.png",
       priority = "extra-high",
       width = 32,
       height = 32,
-      scale=0.5,
+      scale=0.6,
       frame_count=1,
-      shift = {-0.5, -0.3}
+      shift = {-0.2, -0.3}
     },
     south = {
       filename = "__Bottleneck__/graphics/yellow.png",
       priority = "extra-high",
       width = 32,
       height = 32,
-      scale=0.5,
+      scale=0.6,
       frame_count=1,
-      shift = {-0.5, -0.3}
+      shift = {-0.2, -0.3}
     },
     west = {
       filename = "__Bottleneck__/graphics/green.png",
       priority = "extra-high",
       width = 32,
       height = 32,
-      scale=0.5,
+      scale=0.6,
       frame_count=1,
-      shift = {-0.5, -0.3}
+      shift = {-0.2, -0.3}
     },
     northwest = {
       filename = "__Bottleneck__/graphics/blue.png",
       priority = "extra-high",
       width = 32,
       height = 32,
-      scale=0.5,
+      scale=0.6,
       frame_count=1,
-      shift = {-0.5, -0.3}
+      shift = {-0.2, -0.3}
     },
     northeast = {
       filename = "__Bottleneck__/graphics/blue.png",
       priority = "extra-high",
       width = 32,
       height = 32,
-      scale=0.5,
+      scale=0.6,
       frame_count=1,
-      shift = {-0.5, -0.3}
+      shift = {-0.2, -0.3}
     },
     southwest = {
       filename = "__Bottleneck__/graphics/blue.png",
       priority = "extra-high",
       width = 32,
       height = 32,
-      scale=0.5,
+      scale=0.6,
       frame_count=1,
-      shift = {-0.5, -0.3}
+      shift = {-0.2, -0.3}
     },
     southeast = {
       filename = "__Bottleneck__/graphics/blue.png",
       priority = "extra-high",
       width = 32,
       height = 32,
-      scale=0.5,
+      scale=0.6,
       frame_count=1,
-      shift = {-0.5, -0.3}
+      shift = {-0.2, -0.3}
     },
   },
   fluid_background = Proto.empty_sprite,
