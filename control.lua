@@ -167,22 +167,23 @@ local function rebuild_overlays()
   ]]--
 
   --List of true value signal names for faster iteration
-  local signal_names = {
-    ["green-bottleneck"] = true,
-    ["red-bottleneck"] = true,
-    ["yellow-bottleneck"] = true,
-    ["blue-bottleneck"] = true,
-  }
   for _, surface in pairs(game.surfaces) do
     --find-entities-filtered with no area argument scans for all entities in loaded chunks and should
     --be more effiecent then scanning through all chunks like in previous version
 
     --destroy any existing bottleneck-signals
     --loop through all decrotives once and trigger on name for more effeciency
-    for _, decorative in pairs(surface.find_entities_filtered{type="decorative"}) do
-      if signal_names[decorative.name] then
-        decorative.destroy()
-      end
+    for _, decorative in pairs(surface.find_entities_filtered{type="decorative", name="green-bottleneck"}) do
+      decorative.destroy()
+    end
+    for _, decorative in pairs(surface.find_entities_filtered{type="decorative", name="red-bottleneck"}) do
+      decorative.destroy()
+    end
+    for _, decorative in pairs(surface.find_entities_filtered{type="decorative", name="yellow-bottleneck"}) do
+      decorative.destroy()
+    end
+    for _, decorative in pairs(surface.find_entities_filtered{type="decorative", name="blue-bottleneck"}) do
+      decorative.destroy()
     end
 
     --[[
