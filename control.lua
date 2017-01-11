@@ -89,17 +89,10 @@ local light_map = {
   yellowminus = .8,
 }
 
-local floor = math.floor
+--Faster to just change the color than it is to check it first.
 local function change_signal(signal, signal_color)
-  if global.high_contrast and signal_color == "yellow" then
-    signal_color = "blue"
-  end
   signal_color = light_map[signal_color] or .3
-  local orientation = floor( (signal.orientation * 10^1) + 0.5) / (10^1)
-  if (signal and signal.valid) and orientation ~= signal_color then
-    --game.print("Changing signal to ".. signal_color .." from "..orientation)
     signal.orientation=signal_color
-  end
 end
 
 local update = {}
@@ -110,7 +103,7 @@ function update.drill(data)
   if (entity.energy == 0) or (entity.mining_target == nil and check_drill_depleted(data)) then
     change_signal(data.signal, "red")
   elseif (entity.mining_progress == progress) then
-    change_signal(data.signal, "yellow")
+    change_signal(data.signal, global.high_contrast and "blue" or "yellow")
   else
     change_signal(data.signal, "green")
     data.progress = entity.mining_progress
@@ -124,7 +117,7 @@ function update.machine(data)
   elseif entity.is_crafting() and (entity.crafting_progress < 1) and (entity.bonus_progress < 1) then
     change_signal(data.signal, "green")
   elseif (entity.crafting_progress >= 1) or (entity.bonus_progress >= 1) or (not entity.get_output_inventory().is_empty()) or (has_fluid_output_available(entity)) then
-    change_signal(data.signal, "yellow")
+    change_signal(data.signal, global.high_contrast and "blue" or "yellow")
   else
     change_signal(data.signal, "red")
   end
@@ -137,13 +130,11 @@ function update.furnace(data)
   elseif entity.is_crafting() and (entity.crafting_progress < 1) and (entity.bonus_progress < 1) then
     change_signal(data.signal, "green")
   elseif (entity.crafting_progress >= 1) or (entity.bonus_progress >= 1) or (not entity.get_output_inventory().is_empty()) or (has_fluid_output_available(entity)) then
-    change_signal(data.signal, "yellow")
+    change_signal(data.signal, global.high_contrast and "blue" or "yellow")
   else
     change_signal(data.signal, "red")
   end
 end
-
-
 
 --[[ A function that is called whenever an entity is built (both by player and by robots) ]]--
 local function built(event)
@@ -265,7 +256,7 @@ local function on_tick()
 
       -- if signal exists, destroy it
       if signal and signal.valid then
-        change_signal(signal, light.off)
+        change_signal(signal, "off")
       end
       numiter = numiter + 1
       index, data = next(overlays, index)

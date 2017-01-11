@@ -19,62 +19,6 @@ Proto.empty_animation = {
   animation_speed = 0
 }
 
-local test_stoplight = {
-  type = "lamp",
-  name = "bottleneck-icons-lamp",
-  icon = "__base__/graphics/icons/small-lamp.png",
-  max_health = 0,
-  corpse = "small-remnants",
-  selection_box = {{-0.5, -0.5}, {0.5, 0.5}},
-  --selectable_in_game = false,
-  energy_source =
-  {
-    type = "burner",
-    usage_priority = "secondary-input",
-    effectivity = 10000,
-    fuel_inventory_size = 1
-  },
-  energy_usage_per_tick = "0.00000000000001W",
-  light = {intensity = 0.4, size = 6},
-  light_when_colored = {intensity = 0.4, size = 6},
-  glow_size = 2,
-  glow_color_intensity = 0.135,
-  picture_off =
-  {
-    filename = "__Bottleneck__/graphics/off.png",
-    priority = "extra-high",
-    x=0,
-    y=0,
-    width = 32,
-    height = 32,
-    scale=0.6,
-    frame_count=1,
-    shift = {0, 0},
-    axially_symmetrical = false,
-    direction_count = 1,
-  },
-  picture_on =
-  {
-    filename = "__Bottleneck__/graphics/stoplight-on-patch.png",
-    priority = "high",
-    width = 32,
-    height = 32,
-    frame_count = 1,
-    axially_symmetrical = false,
-    direction_count = 1,
-    shift = {0, 0},
-  },
-  signal_to_color_mapping =
-  {
-    {signal="signal-red", color={r=1,g=0,b=0}},
-    {signal="signal-green", color={r=0,g=1,b=0}},
-    {signal="signal-blue", color={r=0,g=0,b=1}},
-    {signal="signal-yellow", color={r=1,g=1,b=0}},
-    {signal="signal-pink", color={r=1,g=0,b=1}},
-    {signal="signal-cyan", color={r=0,g=1,b=1}},
-  },
-}
-
 local stoplight = {
   type = "car",
   name = "bottleneck-stoplight",
@@ -102,7 +46,7 @@ local stoplight = {
         frame_count = 1,
         direction_count = 7,
         scale = 0.6,
-        shift = {-0.2, -0.3},
+        shift = {-0.3, -0.2},
         animation_speed = 0,
         max_advance = 0,
         stripes =
@@ -133,4 +77,4 @@ local key2 = {
   key_sequence = "SHIFT + B",
   consuming = "script-only"
 }
-data:extend({stoplight, test_stoplight, key1, key2})
+data:extend({stoplight, key1, key2})
