@@ -14,22 +14,19 @@ Proto.empty_animation = {
   height = Proto.empty_sprite.height,
   line_length = 1,
   frame_count = 1,
+  direction_count = 1,
   shift = { 0, 0},
   animation_speed = 0
 }
 
-local test_stoplight1 = {
+local test_stoplight = {
   type = "lamp",
   name = "bottleneck-icons-lamp",
   icon = "__base__/graphics/icons/small-lamp.png",
-  --flags = {},
-  --minable = {hardness = 0.2, mining_time = 0.5, result = "small-lamp"},
   max_health = 0,
   corpse = "small-remnants",
-  --collision_box = {{-0.15, -0.15}, {0.15, 0.15}},
   selection_box = {{-0.5, -0.5}, {0.5, 0.5}},
   --selectable_in_game = false,
-  --vehicle_impact_sound =  { filename = "__base__/sound/car-metal-impact.ogg", volume = 0.65 },
   energy_source =
   {
     type = "burner",
@@ -44,7 +41,6 @@ local test_stoplight1 = {
   glow_color_intensity = 0.135,
   picture_off =
   {
-    --filename = "__base__/graphics/entity/small-lamp/light-off.png",
     filename = "__Bottleneck__/graphics/off.png",
     priority = "extra-high",
     x=0,
@@ -79,136 +75,50 @@ local test_stoplight1 = {
   },
 }
 
-
-
-local test_stoplight2 = { --luacheck: ignore
-  type = "rail-signal",
-  name = "bottleneck-icons",
-  icon = "__Bottleneck__/graphics/stoplights.png",
-  flags = {"placeable-player", "placeable-neutral", "player-creation", "building-direction-8-way"},
-  order = "AintNobodyGotTimeForThat",
-  minable = {mining_time = 0.5, result = "rail-signal"},
+local stoplight = {
+  type = "car",
+  name = "bottleneck-stoplight",
+  icon = "__Bottleneck__/graphics/red.png",
+  flags = {},
   max_health = 0,
-  selectable_in_game=false,
-  collision_box = {{-0.0, -0.0}, {0.0, 0.0}},
-  selection_box = {{-0.0, -0.0}, {0.0, 0.0}},
+  energy_per_hit_point = 0,
+  effectivity = 100,
+  braking_power = "1W",
+  burner =
+  {
+    effectivity = 100,
+    fuel_inventory_size = 1,
+  },
+  consumption = "1W",
+  friction = 0,
   animation =
   {
-    filename = "__Bottleneck__/graphics/stoplights.png",
-    priority = "high",
-    width = 32,
-    height = 32,
-    frame_count = 3,
-    direction_count = 8,
-    scale=0.6,
-    shift = {-0.5, -0.3}
+    layers =
+    {
+      {
+        width = 32,
+        priority="extra-high",
+        height = 32,
+        frame_count = 1,
+        direction_count = 7,
+        scale = 0.6,
+        shift = {-0.2, -0.3},
+        animation_speed = 0,
+        max_advance = 0,
+        stripes =
+        {
+          {
+            filename = "__Bottleneck__/graphics/stoplights.png",
+            priority="extra-high",
+            width_in_frames = 1,
+            height_in_frames = 7,
+          },
+        }
+      },
+    }
   },
-  green_light = {intensity = 0.2, size = 4, color={g=1}},
-  orange_light = {intensity = 0.2, size = 4, color={g=1}},
-  red_light = {intensity = 0.2, size = 4, color={g=1}},
-}
-
-local stoplight = {
-  type = "storage-tank",
-  name = "bottleneck-icons",
-  icon = "__Bottleneck__/graphics/red.png",
-  flags = {"building-direction-8-way", "placeable-off-grid", "not-blueprintable", "not-deconstructable"},
-  minable = nil,
-  max_health = 0,
-  order = "AintNobodyGotTimeForThat",
-  selectable_in_game = false,
-  collision_box = {{-0.0,-0.0}, {0.0,0.0}},
-  selection_box = {{-0.0,-0.0}, {0.0,0.0}},
-  fluid_box = {
-    base_area = 0,
-    pipe_covers = nil,
-    pipe_connections = {},
-  },
-  window_bounding_box = {{-0.0,-0.0}, {0.0, 0.0}},
-  pictures = {
-    picture = {
-      north = {
-        filename = "__Bottleneck__/graphics/off.png",
-        priority = "extra-high",
-        x=0,
-        y=0,
-        width = 32,
-        height = 32,
-        scale=0.6,
-        frame_count=1,
-        shift = {-0.2, -0.3}
-      },
-      east = {
-        filename = "__Bottleneck__/graphics/red.png",
-        priority = "extra-high",
-        width = 32,
-        height = 32,
-        scale=0.6,
-        frame_count=1,
-        shift = {-0.2, -0.3}
-      },
-      south = {
-        filename = "__Bottleneck__/graphics/yellow.png",
-        priority = "extra-high",
-        width = 32,
-        height = 32,
-        scale=0.6,
-        frame_count=1,
-        shift = {-0.2, -0.3}
-      },
-      west = {
-        filename = "__Bottleneck__/graphics/green.png",
-        priority = "extra-high",
-        width = 32,
-        height = 32,
-        scale=0.6,
-        frame_count=1,
-        shift = {-0.2, -0.3}
-      },
-      northwest = {
-        filename = "__Bottleneck__/graphics/blue.png",
-        priority = "extra-high",
-        width = 32,
-        height = 32,
-        scale=0.6,
-        frame_count=1,
-        shift = {-0.2, -0.3}
-      },
-      northeast = {
-        filename = "__Bottleneck__/graphics/blue.png",
-        priority = "extra-high",
-        width = 32,
-        height = 32,
-        scale=0.6,
-        frame_count=1,
-        shift = {-0.2, -0.3}
-      },
-      southwest = {
-        filename = "__Bottleneck__/graphics/blue.png",
-        priority = "extra-high",
-        width = 32,
-        height = 32,
-        scale=0.6,
-        frame_count=1,
-        shift = {-0.2, -0.3}
-      },
-      southeast = {
-        filename = "__Bottleneck__/graphics/blue.png",
-        priority = "extra-high",
-        width = 32,
-        height = 32,
-        scale=0.6,
-        frame_count=1,
-        shift = {-0.2, -0.3}
-      },
-    },
-    fluid_background = Proto.empty_sprite,
-    window_background = Proto.empty_sprite,
-    flow_sprite = Proto.empty_sprite,
-  },
-  flow_length_in_ticks = 360,
-  vehicle_impact_sound = nil,
-  working_sound = nil,
+  rotation_speed = 0, --0.015,
+  inventory_size = 0
 }
 
 local key1 = {
@@ -223,4 +133,4 @@ local key2 = {
   key_sequence = "SHIFT + B",
   consuming = "script-only"
 }
-data:extend({stoplight, test_stoplight1, key1, key2})
+data:extend({stoplight, test_stoplight, key1, key2})
