@@ -294,7 +294,7 @@ local function toggle_highcontrast(event) --luacheck: ignore
     return
   end
   global.high_contrast = not global.high_contrast
-  msg('Bottleneck: Using high contrast mode '..tostring(global.high_contrast))
+  msg('Bottleneck: Using '..(global.high_contrast and 'high' or 'normal')..' contrast mode')
 end
 
 -------------------------------------------------------------------------------
