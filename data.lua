@@ -14,56 +14,90 @@ Proto.empty_animation = {
   height = Proto.empty_sprite.height,
   line_length = 1,
   frame_count = 1,
-  direction_count = 1,
   shift = { 0, 0},
   animation_speed = 0
 }
 
+--off, green, red, yellow, blue
 local stoplight = {
-  type = "car",
+  type = "storage-tank",
   name = "bottleneck-stoplight",
   icon = "__Bottleneck__/graphics/red.png",
-  flags = {},
   max_health = 0,
-  energy_per_hit_point = 0,
-  effectivity = 100,
-  braking_power = "1W",
-  burner =
-  {
-    effectivity = 100,
-    fuel_inventory_size = 1,
+  selectable_in_game = false,
+  collision_box = {{-0.0,-0.0}, {0.0,0.0}},
+  selection_box = {{-0.0,-0.0}, {0.0,0.0}},
+  fluid_box = {
+    base_area = 0,
+    pipe_covers = nil,
+    pipe_connections = {},
   },
-  consumption = "1W",
-  friction = 0,
-  animation =
-  {
-    layers =
-    {
-      {
+  window_bounding_box = {{-0.0,-0.0}, {0.0, 0.0}},
+  pictures = {
+    picture = {
+      north = {
+        --off
+        filename = "__Bottleneck__/graphics/stoplights.png",
+        priority = "extra-high",
+        x = 0,
+        y = 0,
         width = 32,
-        priority="extra-high",
         height = 32,
-        frame_count = 1,
-        direction_count = 7,
         scale = 0.6,
-        shift = {-0.5, -0.3},
-        animation_speed = 0,
-        max_advance = 0,
-        stripes =
-        {
-          {
-            filename = "__Bottleneck__/graphics/stoplights.png",
-            priority="extra-high",
-            width_in_frames = 1,
-            height_in_frames = 7,
-          },
-        }
+        frame_count = 1,
+        shift = {-0.5, -0.3}
       },
-    }
+      east = {
+        --green
+        filename = "__Bottleneck__/graphics/stoplights.png",
+        x = 0,
+        y = 32,
+        priority = "extra-high",
+        width = 32,
+        height = 32,
+        scale = 0.6,
+        frame_count = 1,
+        shift = {-0.5, -0.3}
+      },
+      south = {
+        --red
+        filename = "__Bottleneck__/graphics/stoplights.png",
+        x = 0,
+        y = 64,
+        priority = "extra-high",
+        width = 32,
+        height = 32,
+        scale = 0.6,
+        frame_count = 1,
+        shift = {-0.5, -0.3}
+      },
+      west = {
+        --yellow
+        x = 0,
+        y = 96,
+        filename = "__Bottleneck__/graphics/stoplights.png",
+        priority = "extra-high",
+        width = 32,
+        height = 32,
+        scale = 0.6,
+        frame_count = 1,
+        shift = {-0.5, -0.3}
+      },
+    },
+    fluid_background = Proto.empty_sprite,
+    window_background = Proto.empty_sprite,
+    flow_sprite = Proto.empty_sprite,
   },
-  rotation_speed = 0, --0.015,
-  inventory_size = 0
+  flow_length_in_ticks = 360,
+  vehicle_impact_sound = nil,
+  working_sound = nil,
 }
+
+local stoplight_high = table.deepcopy(stoplight)
+stoplight_high.name = "bottleneck-stoplight-high"
+stoplight_high.pictures.picture.west.x = 0
+stoplight_high.pictures.picture.west.y = 128
+
 
 local key1 = {
   type = "custom-input",
@@ -77,4 +111,4 @@ local key2 = {
   key_sequence = "SHIFT + B",
   consuming = "script-only"
 }
-data:extend({stoplight, key1, key2})
+data:extend({stoplight, stoplight_high, key1, key2})

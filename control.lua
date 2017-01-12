@@ -3,14 +3,6 @@ local events ={}
 events.bottleneck_toggle = script.generate_event_name()
 events.rebuild_overlays = script.generate_event_name()
 
-local light = {
-  off = defines.direction.north,
-  red = defines.direction.east,
-  yellow = defines.direction.south,
-  green = defines.direction.west,
-  blue = defines.direction.northwest,
-}
-
 --Message Everyone
 local function msg(message)
   game.print(message)
@@ -32,15 +24,14 @@ local function remove_signal(event)
 end
 
 --[[ Calculates bottom center of the entity to place bottleneck there ]]
-local function get_signal_position_from(entity)
+local function get_signal_position_from(entity, shift_x, shift_y)
   local left_top = entity.prototype.selection_box.left_top
   local right_bottom = entity.prototype.selection_box.right_bottom
   --Calculating center of the selection box
-  local shift_x = (right_bottom.x + left_top.x) / 2
-  local shift_y = right_bottom.y
+  shift_x = shift_x or (right_bottom.x + left_top.x) / 2
+  shift_y = shift_y or right_bottom.y
   --Calculating bottom center of the selection box
-  local bottleneck_position = {x = entity.position.x + shift_x, y = entity.position.y + shift_y}
-  return bottleneck_position --entity.position
+  return {x = entity.position.x + shift_x, y = entity.position.y + shift_y}
 end
 
 --[[ code modified from AutoDeconstruct mod by mindmix https://mods.factorio.com/mods/mindmix ]]
@@ -79,20 +70,17 @@ local function has_fluid_output_available(entity)
   return false
 end
 
-local light_map = {
-  off = .0,
-  green = .2,
-  red = .3,
-  yellow = .4,
-  blue = .5,
-  redx = .7,
-  yellowminus = .8,
+local light = {
+  off = defines.direction.north,
+  green = defines.direction.east,
+  red = defines.direction.south,
+  yellow = defines.direction.west,
 }
 
 --Faster to just change the color than it is to check it first.
 local function change_signal(signal, signal_color)
-  signal_color = light_map[signal_color] or .3
-    signal.orientation=signal_color
+  signal_color = light[signal_color] or "red"
+  signal.direction = signal_color
 end
 
 local update = {}
@@ -103,7 +91,7 @@ function update.drill(data)
   if (entity.energy == 0) or (entity.mining_target == nil and check_drill_depleted(data)) then
     change_signal(data.signal, "red")
   elseif (entity.mining_progress == progress) then
-    change_signal(data.signal, global.high_contrast and "blue" or "yellow")
+    change_signal(data.signal, "yellow")
   else
     change_signal(data.signal, "green")
     data.progress = entity.mining_progress
@@ -117,7 +105,7 @@ function update.machine(data)
   elseif entity.is_crafting() and (entity.crafting_progress < 1) and (entity.bonus_progress < 1) then
     change_signal(data.signal, "green")
   elseif (entity.crafting_progress >= 1) or (entity.bonus_progress >= 1) or (not entity.get_output_inventory().is_empty()) or (has_fluid_output_available(entity)) then
-    change_signal(data.signal, global.high_contrast and "blue" or "yellow")
+    change_signal(data.signal, "yellow")
   else
     change_signal(data.signal, "red")
   end
@@ -130,7 +118,7 @@ function update.furnace(data)
   elseif entity.is_crafting() and (entity.crafting_progress < 1) and (entity.bonus_progress < 1) then
     change_signal(data.signal, "green")
   elseif (entity.crafting_progress >= 1) or (entity.bonus_progress >= 1) or (not entity.get_output_inventory().is_empty()) or (has_fluid_output_available(entity)) then
-    change_signal(data.signal, global.high_contrast and "blue" or "yellow")
+    change_signal(data.signal, "yellow")
   else
     change_signal(data.signal, "red")
   end
@@ -153,14 +141,15 @@ local function built(event)
   if data then
     data.entity = entity
     data.position = get_signal_position_from(entity)
-    local signal = entity.surface.create_entity{name="bottleneck-stoplight",position=data.position,direction=light.off,force=entity.force}
+    local name = (global.high_contrast and "bottleneck-stoplight-high") or "bottleneck-stoplight"
+    local signal = entity.surface.create_entity{name=name, position=data.position, direction=light.off, force=entity.force}
     signal.active = false
     signal.operable = false
     signal.destructible = false
     data.signal=signal
 
     if global.show_bottlenecks == 1 then
-       update[data.update](data)
+      update[data.update](data)
     end
     global.overlays[entity.unit_number] = data
     -- if we are in the process of removing lights, we need to restart
@@ -171,7 +160,6 @@ local function built(event)
     end
   end
 end
-
 
 local function rebuild_overlays()
   --[[Setup the global overlays table This table contains the machine entity, the signal entity and the freeze variable]]--
@@ -185,8 +173,10 @@ local function rebuild_overlays()
     --be more effiecent then scanning through all chunks like in previous version
 
     --[[destroy any existing bottleneck-signals]]--
-    for _, stoplight in pairs(surface.find_entities_filtered{type="car", name="bottleneck-stoplight"}) do
-      stoplight.destroy()
+    for _, stoplight in pairs(surface.find_entities_filtered{type="storage-tank"}) do
+      if stoplight.name == "bottleneck-stoplight" or stoplight.name == "bottleneck-stoplight-high" then
+        stoplight.destroy()
+      end
     end
 
     --[[Find all assembling machines within the bounds, and pretend that they were just built]]--
@@ -213,8 +203,8 @@ local function on_tick()
     local signals_per_tick = global.signals_per_tick or 40
     local overlays = global.overlays
     local index, data = global.update_index
+    --check for existing data at index
     if index and overlays[index] then
-      --index, data = index, overlays[index]
       data = overlays[index]
     else
       index, data = next(overlays, index)
@@ -225,12 +215,15 @@ local function on_tick()
       local signal = data.signal
 
       -- if entity is valid, update it, otherwise remove the signal and the associated data
-      if entity.valid then
+      if entity.valid and signal.valid then
         update[data.update](data)
-      else
-        if signal and signal.valid then
-          signal.destroy()
-        end
+      elseif entity.valid and not signal.valid then
+        -- Rebuild the icon something broke it!
+        local name = (global.high_contrast and "bottleneck-stoplight-high") or "bottleneck-stoplight"
+        signal = entity.surface.create_entity{name=name, position=data.position, direction=light.off, force=entity.force}
+        data.signal = signal
+      elseif not entity.valid and signal.valid then
+        signal.destroy()
         overlays[index] = nil
       end
       numiter = numiter + 1
@@ -238,8 +231,8 @@ local function on_tick()
       index, data = next(overlays, index)
     end
     global.update_index = index
-  elseif global.show_bottlenecks == -1 then
-    local signals_per_tick = global.signals_per_tick or 40
+  elseif global.show_bottlenecks < 0 then
+    local show, signals_per_tick = global.show_bottlenecks, global.signals_per_tick or 40
     local overlays = global.overlays
     local index, data = global.update_index
     --Check for existing index and associated data
@@ -250,21 +243,28 @@ local function on_tick()
     end
     local numiter = 0
     while index and (numiter < signals_per_tick) do
-
-      --local data = overlays[index]
       local signal = data.signal
-
-      -- if signal exists, destroy it
       if signal and signal.valid then
-        change_signal(signal, "off")
+        if show == -1 then
+          change_signal(signal, "off")
+        elseif show == -2 then
+          game.print("Switching")
+          local name = (global.high_contrast and "bottleneck-stoplight-high") or "bottleneck-stoplight"
+          local signal2 = signal.surface.create_entity{name=name, position=data.position, direction=signal.direction, force=signal.force}
+          signal.destroy()
+          data.signal = signal2
+        end
+      else
+        overlays[index] = nil
       end
       numiter = numiter + 1
       index, data = next(overlays, index)
     end
     global.update_index = index
-    -- if we have reached the end of the list (i.e., have removed all lights), pause updating until enabled by hotkey next
+    -- if we have reached the end of the list (i.e., have removed all lights),
+    -- pause updating until enabled by hotkey next
     if not index then
-      global.show_bottlenecks = 0
+      global.show_bottlenecks = (show == -2 and 1) or (show == -1 and 0)
     end
   end
 end
@@ -295,6 +295,9 @@ local function toggle_highcontrast(event) --luacheck: ignore
   end
   global.high_contrast = not global.high_contrast
   msg('Bottleneck: Using '..(global.high_contrast and 'high' or 'normal')..' contrast mode')
+  global.show_bottlenecks = -2
+  --Toggling high contrast will turn bottlenecks back on if they are off
+  --This is better then saving and comparing "old_show_bottlenecks"
 end
 
 -------------------------------------------------------------------------------
@@ -346,15 +349,18 @@ local interface = {}
 --get_ids, return the table of event ids
 interface.get_ids = function() return events end
 --is_enabled - return show_bottlenecks
-interface.enabled = function() if global.show_bottlenecks == 1 then return true else return false end end
+interface.enabled = function() return global.show_bottlenecks == 1 end
 --print the global to a file
-interface.print_global = function() game.write_file("logs/Bottleneck/global.lua",serpent.block(global, {comment=false}),false) end
+interface.print_global = function () game.write_file("logs/Bottleneck/global.lua",serpent.block(global, {comment=false}),false) end
 --rebuild all icons
-interface.rebuild = function() rebuild_overlays() end
+interface.rebuild = rebuild_overlays
 --change signals per tick calculation
-interface.signals_per_tick = function(count) global.signals_per_tick = tonumber(count) or 40 end
+interface.signals_per_tick = function(count) global.signals_per_tick = tonumber(count) or 40 return global.signals_per_tick end
 --allow other mods to interact with bottlneck
 interface.change_signal = change_signal --function(data, color) change_signal(signal, color) end
---get the position for the signal
-interface.get_signal_position = get_signal_position_from
+--get a place position for a signal
+interface.get_position_for_signal = get_signal_position_from
+--get the signal data associated with an entity
+interface.get_signal_data = function(unit_number) return global.overlays[unit_number] end
+
 remote.add_interface("Bottleneck", interface)
