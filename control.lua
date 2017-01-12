@@ -248,7 +248,6 @@ local function on_tick()
         if show == -1 then
           change_signal(signal, "off")
         elseif show == -2 then
-          game.print("Switching")
           local name = (global.high_contrast and "bottleneck-stoplight-high") or "bottleneck-stoplight"
           local signal2 = signal.surface.create_entity{name=name, position=data.position, direction=signal.direction, force=signal.force}
           signal.destroy()
@@ -296,6 +295,7 @@ local function toggle_highcontrast(event) --luacheck: ignore
   global.high_contrast = not global.high_contrast
   msg('Bottleneck: Using '..(global.high_contrast and 'high' or 'normal')..' contrast mode')
   global.show_bottlenecks = -2
+  global.update_index = nil
   --Toggling high contrast will turn bottlenecks back on if they are off
   --This is better then saving and comparing "old_show_bottlenecks"
 end
