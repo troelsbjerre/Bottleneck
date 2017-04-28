@@ -15,7 +15,7 @@ Proto.empty_animation = {
   line_length = 1,
   frame_count = 1,
   shift = { 0, 0},
-  animation_speed = 0
+  animation_speed = 1
 }
 
 --off, green, red, yellow, blue
@@ -85,6 +85,7 @@ local stoplight = {
         shift = {-0.5, -0.3}
       },
     },
+    gas_flow = Proto.empty_animation,
     fluid_background = Proto.empty_sprite,
     window_background = Proto.empty_sprite,
     flow_sprite = Proto.empty_sprite,
