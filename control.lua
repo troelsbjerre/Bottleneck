@@ -193,7 +193,7 @@ local function rebuild_overlays()
     for _, am in pairs(surface.find_entities_filtered{type="mining-drill"}) do
       built({created_entity = am})
     end
-    game.raise_event(events.rebuild_overlays, {})
+    script.raise_event(events.rebuild_overlays, {})
   end
 end
 
@@ -278,10 +278,10 @@ local function on_hotkey(event)
   end
   global.update_index = nil
   if global.show_bottlenecks == 1 then
-    game.raise_event(events.bottleneck_toggle, {tick=event.tick, player_index=event.player_index, enable=false})
+    script.raise_event(events.bottleneck_toggle, {tick=event.tick, player_index=event.player_index, enable=false})
     global.show_bottlenecks = -1
   else
-    game.raise_event(events.bottleneck_toggle, {tick=event.tick, player_index=event.player_index, enable=true})
+    script.raise_event(events.bottleneck_toggle, {tick=event.tick, player_index=event.player_index, enable=true})
     global.show_bottlenecks = 1
   end
 end
