@@ -1,31 +1,6 @@
 -------------------------------------------------------------------------------
 --[[Bottleneck]]--
 -------------------------------------------------------------------------------
---[[ Remove the light]]
-local function remove_signal(event)
-    local entity = event.entity
-    local index = entity.unit_number
-    local overlays = global.overlays
-    local data = overlays[index]
-    if not data then return end
-    local signal = data.signal
-    if signal and signal.valid then
-        signal.destroy()
-    end
-    overlays[index] = nil
-end
-
---[[ Calculates bottom center of the entity to place bottleneck there ]]
-local function get_signal_position_from(entity, shift_x, shift_y)
-    local left_top = entity.prototype.selection_box.left_top
-    local right_bottom = entity.prototype.selection_box.right_bottom
-    --Calculating center of the selection box
-    shift_x = shift_x or (right_bottom.x + left_top.x) / 2
-    shift_y = shift_y or right_bottom.y
-    --Calculating bottom center of the selection box
-    return {x = entity.position.x + shift_x, y = entity.position.y + shift_y}
-end
-
 --[[ code modified from AutoDeconstruct mod by mindmix https://mods.factorio.com/mods/mindmix ]]
 local function check_drill_depleted(data)
     local drill = data.entity
@@ -62,7 +37,7 @@ local function has_fluid_output_available(entity)
     return false
 end
 
-local light = {
+local LIGHT = {
     off = 0,
     green = 1,
     red = 2,
@@ -81,22 +56,55 @@ local light = {
 
 --Faster to just change the color than it is to check it first.
 local function change_signal(signal, signal_color)
-    signal.graphics_variation = light[signal_color] or type(signal_color) == "number" and signal_color
+    if settings.global["bottleneck-high-contrast"].value then
+         if LIGHT[signal_color] == 3 then
+             signal_color = 4
+         end
+    end
+    signal.graphics_variation = LIGHT[signal_color] or 0
 end
+
+--[[ Remove the LIGHT]]
+local function remove_signal(event)
+    local entity = event.entity
+    local index = entity.unit_number
+    local overlays = global.overlays
+    local data = overlays[index]
+    if not data then return end
+    local signal = data.signal
+    if signal and signal.valid then
+        signal.destroy()
+    end
+    overlays[index] = nil
+end
+
+--[[ Calculates bottom center of the entity to place bottleneck there ]]
+local function get_signal_position_from(entity)
+    local left_top = entity.prototype.selection_box.left_top
+    local right_bottom = entity.prototype.selection_box.right_bottom
+    --Calculating center of the selection box
+    local x = (right_bottom.x + left_top.x) / 2
+    local y = right_bottom.y
+    --Calculating bottom center of the selection box
+    return {x = entity.position.x + x, y = entity.position.y + y}
+end
+
 
 local function new_signal(entity, variation)
     local signal = entity.surface.create_entity{name = "bottleneck-stoplight", position = get_signal_position_from(entity), force = entity.force}
-    signal.graphics_variation = (not settings.global["bottleneck-enabled"].value and light["off"]) or variation or light["red"]
+    signal.graphics_variation = (not settings.global["bottleneck-enabled"].value and LIGHT["off"]) or variation or LIGHT["red"]
     signal.destructible = false
     return signal
 end
 
-local function entity_moved(event)
-    local data = global.overlays[event.moved_entity.unit_number]
+local function entity_moved(event, data)
+    data = data or global.overlays[event.moved_entity.unit_number]
     if data then
         if data.signal and data.signal.valid then
-            data.signal.teleport(get_signal_position_from(event.moved_entity))
-            data.position = data.signal.position
+            --Not sure why this position hack is needed but it works.
+            local position = get_signal_position_from(event.moved_entity)
+            position.x = position.x + .5
+            data.signal.teleport(position)
         end
     end
 end
@@ -132,8 +140,6 @@ end
 
 function update.furnace(data)
     local entity = data.entity
-    -- game.print(data.signal.graphics_variation)
-    -- data.signal.graphics_variation = 3
     if entity.energy == 0 then
         change_signal(data.signal, "red")
     elseif entity.is_crafting() and (entity.crafting_progress < 1) and (entity.bonus_progress < 1) then
@@ -149,7 +155,6 @@ end
 local function built(event)
     local entity = event.created_entity
     local data
-
     -- If the entity that's been built is an assembly machine or a furnace...
     if entity.type == "assembling-machine" then
         data = { update = "machine" }
@@ -161,12 +166,11 @@ local function built(event)
 
     if data then
         data.entity = entity
-        data.position = get_signal_position_from(entity)
         data.signal = new_signal(entity)
 
         --update[data.update](data)
         global.overlays[entity.unit_number] = data
-        -- if we are in the process of removing lights, we need to restart
+        -- if we are in the process of removing LIGHTs, we need to restart
         -- that, since inserting into the overlays table may mess up the
         -- iteration order.
         if global.show_bottlenecks == -1 then
@@ -267,7 +271,7 @@ local function on_tick()
             index, data = next(overlays, index)
         end
         global.update_index = index
-        -- if we have reached the end of the list (i.e., have removed all lights),
+        -- if we have reached the end of the list (i.e., have removed all LIGHTs),
         -- pause updating until enabled by hotkey next
         if not index then
             global.show_bottlenecks = (show == -2 and 1) or (show == -1 and 0)
@@ -281,18 +285,11 @@ local function update_settings(event)
     end
     if event.setting == "bottleneck-high-contrast" then
         --highcontrast switch here
-        if settings.global["bottleneck-high-contrast"].value then
-            light["yellow"] = light["blue"]
-            light["yellowsmall"] = light["bluesmall"]
-        else
-            light["yellow"] = 3
-            light["yellowsmall"] = 10
-        end
+
         global.update_index = nil
         global.show_bottlenecks = global.show_bottlenecks > 0 and -2 or global.show_bottlenecks
     end
 end
-
 script.on_event(defines.events.on_runtime_mod_setting_changed, update_settings)
 
 -------------------------------------------------------------------------------
@@ -355,7 +352,10 @@ interface.enabled = function() return settings.global["bottleneck-enabled"].valu
 interface.print_global = function () game.write_file("Bottleneck/global.lua", serpent.block(global, {nocode=true, comment=false})) end
 --rebuild all icons
 interface.rebuild = rebuild_overlays
---allow other mods to interact with bottlneck
+--allow other mods to interact with bottleneck
+interface.entity_moved = entity_moved
+interface.get_lights = function() return LIGHT end
+interface.new_signal = new_signal
 interface.change_signal = change_signal --function(data, color) change_signal(signal, color) end
 --get a place position for a signal
 interface.get_position_for_signal = get_signal_position_from
