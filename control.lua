@@ -282,6 +282,7 @@ end
 local function update_settings(event)
     if event.setting == "bottleneck-enabled" then
         global.show_bottlenecks = settings.global["bottleneck-enabled"].value and 1 or -1
+		global.update_index = nil
     end
     if event.setting == "bottleneck-high-contrast" then
         --highcontrast switch here
