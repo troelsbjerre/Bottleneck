@@ -57,9 +57,9 @@ local LIGHT = {
 --Faster to just change the color than it is to check it first.
 local function change_signal(signal, signal_color)
     if settings.global["bottleneck-high-contrast"].value then
-         if LIGHT[signal_color] == 3 then
-             signal_color = 4
-         end
+		if signal_color == "yellow" then
+			signal_color = "blue"
+		end
     end
     signal.graphics_variation = LIGHT[signal_color] or 0
 end
