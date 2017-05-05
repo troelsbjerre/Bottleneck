@@ -56,10 +56,8 @@ local LIGHT = {
 
 --Faster to just change the color than it is to check it first.
 local function change_signal(signal, signal_color)
-    if settings.global["bottleneck-high-contrast"].value then
-		if signal_color == "yellow" then
-			signal_color = "blue"
-		end
+    if global.high_contrast and signal_color == "yellow" then
+		signal_color = "blue"
     end
     signal.graphics_variation = LIGHT[signal_color] or 0
 end
@@ -285,8 +283,8 @@ local function update_settings(event)
 		global.update_index = nil
     end
     if event.setting == "bottleneck-high-contrast" then
-        --highcontrast switch here
-
+        --high_contrast switch here. Cache value to avoid having to fetch settings in change_signal
+		global.high_contrast = settings.global["bottleneck-high-contrast"].value
         global.update_index = nil
         global.show_bottlenecks = global.show_bottlenecks > 0 and -2 or global.show_bottlenecks
     end
@@ -322,6 +320,7 @@ local function on_configuration_changed(event)
         if changes ~= nil then -- THIS Mod has changed
             game.print("Bottleneck: Updated from ".. tostring(changes.old_version) .. " to " .. tostring(changes.new_version))
             global.show_bottlenecks = (settings.global["bottleneck-enabled"].value and 1) or -1
+			global.high_contrast = settings.global["bottleneck-high-contrast"].value
             global.signals_per_tick = nil
             global.lights_per_tick = nil
             global.showbottlenecks = nil
