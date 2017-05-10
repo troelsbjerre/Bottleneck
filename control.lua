@@ -38,20 +38,20 @@ local function has_fluid_output_available(entity)
 end
 
 local LIGHT = {
-    off = 0,
-    green = 1,
-    red = 2,
-    yellow = 3,
-    blue = 4,
-    redx = 5,
-    yellowmin = 6,
-    offsmall = 7,
-    greensmall = 8,
-    redsmall = 9,
-    yellowsmall = 10,
-    bluesmall = 11,
-    redxsmall = 12,
-    yellowminsmall = 13,
+    off = 1,
+    green = 2,
+    red = 3,
+    yellow = 4,
+    blue = 5,
+    redx = 6,
+    yellowmin = 7,
+    offsmall = 8,
+    greensmall = 9,
+    redsmall = 10,
+    yellowsmall = 11,
+    bluesmall = 12,
+    redxsmall = 13,
+    yellowminsmall = 14,
 }
 
 --Faster to just change the color than it is to check it first.
@@ -212,10 +212,16 @@ end
 
 local next = next --very slight perfomance improvment
 local function on_tick()
-    if global.show_bottlenecks == 1 then
-        local signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
+	local data
+	local show_bottlenecks = global.show_bottlenecks
+	local signals_per_tick = global.signals_per_tick
+	-- if not signals_per_tick then
+	-- 	global.signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
+	-- 	signals_per_tick = global.signals_per_tick
+	-- end
+    if show_bottlenecks == 1 then
         local overlays = global.overlays
-        local index, data = global.update_index
+        local index = global.update_index
         --check for existing data at index
         if index and overlays[index] then
             data = overlays[index]
@@ -225,16 +231,21 @@ local function on_tick()
         local numiter = 0
         while index and (numiter < signals_per_tick) do
             local entity = data.entity
-            --local signal = data.signal
-
             -- if entity is valid, update it, otherwise remove the signal and the associated data
-            if entity.valid and data.signal.valid then
-                update[data.update](data)
-            elseif entity.valid and not data.signal.valid then
-                -- Rebuild the icon something broke it!
-                data.signal = new_signal(entity)
-            elseif not entity.valid and data.signal.valid then
-                data.signal.destroy()
+            if entity.valid then
+				if data.signal.valid then
+					update[data.update](data)
+				else
+					-- Rebuild the icon something broke it!
+					data.signal = new_signal(entity)
+				end
+            else
+				-- Machine is gone
+				if data.signal.valid then
+					-- Signal is there; remove it
+					data.signal.destroy()
+				end
+				-- forget about the machine
                 overlays[index] = nil
             end
             numiter = numiter + 1
@@ -242,9 +253,8 @@ local function on_tick()
         end
         global.update_index = index
     elseif global.show_bottlenecks < 0 then
-        local show, signals_per_tick = global.show_bottlenecks, settings.global["bottleneck-signals-per-tick"].value
         local overlays = global.overlays
-        local index, data = global.update_index
+        local index = global.update_index
         --Check for existing index and associated data
         if index and overlays[index] then
             data = overlays[index]
@@ -255,9 +265,9 @@ local function on_tick()
         while index and (numiter < signals_per_tick) do
             local signal = data.signal
             if signal and signal.valid then
-                if show == -1 then
+                if show_bottlenecks == -1 then
                     change_signal(signal, "off")
-                elseif show == -2 then
+                elseif show_bottlenecks == -2 then
                     local current_variation = signal.graphics_variation
                     signal.destroy()
                     data.signal = new_signal(data.entity, current_variation)
@@ -272,12 +282,15 @@ local function on_tick()
         -- if we have reached the end of the list (i.e., have removed all LIGHTs),
         -- pause updating until enabled by hotkey next
         if not index then
-            global.show_bottlenecks = (show == -2 and 1) or (show == -1 and 0)
+            global.show_bottlenecks = (show_bottlenecks == -2 and 1) or (show_bottlenecks == -1 and 0)
         end
     end
 end
 
 local function update_settings(event)
+	if event.setting == "bottleneck-signals_per_tick" then
+		global.signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
+	end
     if event.setting == "bottleneck-enabled" then
         global.show_bottlenecks = settings.global["bottleneck-enabled"].value and 1 or -1
 		global.update_index = nil
@@ -303,6 +316,8 @@ local function init()
     --seperate out init and config changed
     global = {}
     global.show_bottlenecks = (settings.global["bottleneck-enabled"].value and 1) or -1
+	global.high_contrast = settings.global["bottleneck-high-contrast"].value
+	global.signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
     rebuild_overlays()
     register_conditional_events()
 end
@@ -321,14 +336,14 @@ local function on_configuration_changed(event)
             game.print("Bottleneck: Updated from ".. tostring(changes.old_version) .. " to " .. tostring(changes.new_version))
             global.show_bottlenecks = (settings.global["bottleneck-enabled"].value and 1) or -1
 			global.high_contrast = settings.global["bottleneck-high-contrast"].value
-            global.signals_per_tick = nil
+			global.signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
             global.lights_per_tick = nil
             global.showbottlenecks = nil
             global.output_idle_signal = nil
             global.high_contrast = nil
         end
+		rebuild_overlays()
     end
-    rebuild_overlays()
 end
 
 --[[ Setup event handlers ]]--
