@@ -54,12 +54,20 @@ local LIGHT = {
     yellowminsmall = 14,
 }
 
+local STATES = {
+	OFF = 1,
+	RUNNING = 2,
+	STOPPED = 3,
+	FULL = 4,
+}
+
 --Faster to just change the color than it is to check it first.
-local function change_signal(signal, signal_color)
+local function change_signal(data, signal_color, status)
     if global.high_contrast and signal_color == "yellow" then
 		signal_color = "blue"
     end
-    signal.graphics_variation = LIGHT[signal_color] or 0
+    data.signal.graphics_variation = LIGHT[signal_color] or 0
+	data.status = status or STATES.OFF
 end
 
 --[[ Remove the LIGHT]]
@@ -113,11 +121,11 @@ function update.drill(data)
         local entity = data.entity
         local progress = data.progress
         if (entity.energy == 0) or (entity.mining_target == nil and check_drill_depleted(data)) then
-            change_signal(data.signal, "red")
+            change_signal(data, "red", STATES.STOPPED)
         elseif (entity.mining_progress == progress) then
-            change_signal(data.signal, "yellow")
+            change_signal(data, "yellow", STATES.FULL)
         else
-            change_signal(data.signal, "green")
+            change_signal(data, "green", STATES.RUNNING)
             data.progress = entity.mining_progress
         end
     end
@@ -126,26 +134,26 @@ end
 function update.machine(data)
     local entity = data.entity
     if entity.energy == 0 then
-        change_signal(data.signal, "red")
+        change_signal(data, "red", STATES.STOPPED)
     elseif entity.is_crafting() and (entity.crafting_progress < 1) and (entity.bonus_progress < 1) then
-        change_signal(data.signal, "green")
+        change_signal(data, "green", STATES.RUNNING)
     elseif (entity.crafting_progress >= 1) or (entity.bonus_progress >= 1) or (not entity.get_output_inventory().is_empty()) or (has_fluid_output_available(entity)) then
-        change_signal(data.signal, "yellow")
+        change_signal(data, "yellow", STATES.FULL)
     else
-        change_signal(data.signal, "red")
+        change_signal(data, "red", STATES.STOPPED)
     end
 end
 
 function update.furnace(data)
     local entity = data.entity
     if entity.energy == 0 then
-        change_signal(data.signal, "red")
+        change_signal(data, "red", STATES.STOPPED)
     elseif entity.is_crafting() and (entity.crafting_progress < 1) and (entity.bonus_progress < 1) then
-        change_signal(data.signal, "green")
+        change_signal(data, "green", STATES.RUNNING)
     elseif (entity.crafting_progress >= 1) or (entity.bonus_progress >= 1) or (not entity.get_output_inventory().is_empty()) or (has_fluid_output_available(entity)) then
-        change_signal(data.signal, "yellow")
+        change_signal(data, "yellow", STATES.FULL)
     else
-        change_signal(data.signal, "red")
+        change_signal(data, "red", STATES.STOPPED)
     end
 end
 
@@ -165,6 +173,7 @@ local function built(event)
     if data then
         data.entity = entity
         data.signal = new_signal(entity)
+		data.status = STATES.STOPPED
 
         --update[data.update](data)
         global.overlays[entity.unit_number] = data
@@ -266,7 +275,7 @@ local function on_tick()
             local signal = data.signal
             if signal and signal.valid then
                 if show_bottlenecks == -1 then
-                    change_signal(signal, "off")
+                    change_signal(data, "off")
                 elseif show_bottlenecks == -2 then
                     local current_variation = signal.graphics_variation
                     signal.destroy()
@@ -370,6 +379,7 @@ interface.rebuild = rebuild_overlays
 --allow other mods to interact with bottleneck
 interface.entity_moved = entity_moved
 interface.get_lights = function() return LIGHT end
+interface.get_states = function() return STATES; end
 interface.new_signal = new_signal
 interface.change_signal = change_signal --function(data, color) change_signal(signal, color) end
 --get a place position for a signal
