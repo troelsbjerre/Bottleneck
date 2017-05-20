@@ -14,6 +14,13 @@ data:extend{
         order = "bottleneck-ab[high-contrast]"
     },
     {
+        type = "bool-setting",
+        name = "bottleneck-show-green-signal",
+        setting_type = "runtime-global",
+        default_value = true,
+        order = "bottleneck-abc[show-green-signal]"
+    },
+    {
         type = "int-setting",
         name = "bottleneck-signals-per-tick",
         setting_type = "runtime-global",
