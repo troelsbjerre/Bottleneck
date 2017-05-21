@@ -24,7 +24,7 @@ Prototype.empty_animation = {
 local stoplight = {
     type = "simple-entity-with-force",
     name = "bottleneck-stoplight",
-    flags = {"not-blueprintable", "not-deconstructable", "not-on-map"},
+    flags = {"not-blueprintable", "not-deconstructable", "not-on-map", "placeable-off-grid"},
     icon = "__Bottleneck__/graphics/red.png",
     max_health = 100,
     selectable_in_game = false,
@@ -38,7 +38,7 @@ local stoplight = {
     pictures =
     {
         {
-            --0 off
+            --1 off
             filename = "__Bottleneck__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
@@ -46,10 +46,11 @@ local stoplight = {
             width = 32,
             height = 32,
             scale = 0.6,
-            shift = {-0.5, -0.3}
+            --Do not adjust x offsets on prototype, use the control offsets.
+            shift = {0, -0.3}
         },
         {
-            --1 green
+            --2 green
             filename = "__Bottleneck__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
@@ -57,10 +58,10 @@ local stoplight = {
             width = 32,
             height = 32,
             scale = 0.6,
-            shift = {-0.5, -0.3}
+            shift = {0, -0.3}
         },
         {
-            --2 red
+            --3 red
             filename = "__Bottleneck__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
@@ -68,10 +69,10 @@ local stoplight = {
             width = 32,
             height = 32,
             scale = 0.6,
-            shift = {-0.5, -0.3}
+            shift = {0, -0.3}
         },
         {
-            --3 yellow
+            --4 yellow
             filename = "__Bottleneck__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
@@ -79,10 +80,10 @@ local stoplight = {
             width = 32,
             height = 32,
             scale = 0.6,
-            shift = {-0.5, -0.3}
+            shift = {0, -0.3}
         },
         {
-            --4 blue
+            --5 blue
             filename = "__Bottleneck__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
@@ -90,10 +91,10 @@ local stoplight = {
             width = 32,
             height = 32,
             scale = 0.6,
-            shift = {-0.5, -0.3}
+            shift = {0, -0.3}
         },
         {
-            --5 red x
+            --6 red x
             filename = "__Bottleneck__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
@@ -101,10 +102,10 @@ local stoplight = {
             width = 32,
             height = 32,
             scale = 0.6,
-            shift = {-0.5, -0.3}
+            shift = {0, -0.3}
         },
         {
-            --6 yellow -
+            --7 yellow -
             filename = "__Bottleneck__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
@@ -112,10 +113,10 @@ local stoplight = {
             width = 32,
             height = 32,
             scale = 0.6,
-            shift = {-0.5, -0.3}
+            shift = {0, -0.3}
         },
         {
-            --7 off small
+            --8 off small
             filename = "__Bottleneck__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
@@ -123,10 +124,10 @@ local stoplight = {
             width = 32,
             height = 32,
             scale = 0.3,
-            shift = {-0.6, -0.2}
+            shift = {0, -0.2}
         },
         {
-            --8 green small
+            --9 green small
             filename = "__Bottleneck__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
@@ -134,10 +135,10 @@ local stoplight = {
             width = 32,
             height = 32,
             scale = 0.3,
-            shift = {-0.6, -0.2}
+            shift = {0, -0.2}
         },
         {
-            --9 red small
+            --10 red small
             filename = "__Bottleneck__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
@@ -145,10 +146,10 @@ local stoplight = {
             width = 32,
             height = 32,
             scale = 0.3,
-            shift = {-0.6, -0.2}
+            shift = {0, -0.2}
         },
         {
-            --10 yellow small
+            --11 yellow small
             filename = "__Bottleneck__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
@@ -156,10 +157,10 @@ local stoplight = {
             width = 32,
             height = 32,
             scale = 0.3,
-            shift = {-0.6, -0.2}
+            shift = {0, -0.2}
         },
         {
-            --11 blue small
+            --12 blue small
             filename = "__Bottleneck__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
@@ -167,10 +168,10 @@ local stoplight = {
             width = 32,
             height = 32,
             scale = 0.3,
-            shift = {-0.6, -0.2}
+            shift = {0, -0.2}
         },
         {
-            --12 red x small
+            --13 red x small
             filename = "__Bottleneck__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
@@ -178,10 +179,10 @@ local stoplight = {
             width = 32,
             height = 32,
             scale = 0.3,
-            shift = {-0.6, -0.2}
+            shift = {0, -0.2}
         },
         {
-            --13 yellow - small
+            --14 yellow - small
             filename = "__Bottleneck__/graphics/stoplights.png",
             priority = "extra-high",
             x = 0,
@@ -189,7 +190,7 @@ local stoplight = {
             width = 32,
             height = 32,
             scale = 0.3,
-            shift = {-0.6, -0.2}
+            shift = {0, -0.2}
         },
     },
 }
