@@ -341,7 +341,7 @@ script.on_configuration_changed(on_configuration_changed)
 script.on_load(on_load)
 
 local e=defines.events
-local remove_events = {e.on_preplayer_mined_item, e.on_robot_pre_mined, e.on_entity_died}
+local remove_events = {e.on_player_mined_entity, e.on_robot_pre_mined, e.on_entity_died}
 local add_events = {e.on_built_entity, e.on_robot_built_entity}
 
 script.on_event(remove_events, remove_signal)
