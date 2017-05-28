@@ -3,9 +3,7 @@
 -------------------------------------------------------------------------------
 
 local bn_enabled = (settings.global["bottleneck-enabled"].value and 1) or -1
-local bn_high_contrast = settings.global["bottleneck-high-contrast"].value
 local bn_signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
-local bn_show_green = settings.global["bottleneck-show-green-signal"].value
 
 --[[ code modified from AutoDeconstruct mod by mindmix https://mods.factorio.com/mods/mindmix ]]
 local function check_drill_depleted(data)
@@ -52,14 +50,16 @@ local STATES = {
     OFF = 1, RUNNING = 2, STOPPED = 3, FULL = 4,
 }
 
+local STYLE = {
+	LIGHT.off,
+	LIGHT.green,
+	LIGHT.red,
+	LIGHT.yellow,
+}
+
 --Faster to just change the color than it is to check it first.
-local function change_signal(data, signal_color, status)
-    if signal_color == "yellow" and bn_high_contrast then
-        signal_color = "blue"
-    elseif signal_color == "green" and not bn_show_green then
-        signal_color = "off"
-    end
-    data.signal.graphics_variation = LIGHT[signal_color] or 1
+local function change_signal(data, status)
+    data.signal.graphics_variation = STYLE[status] or 1
     data.status = status or STATES.OFF
 end
 
@@ -117,11 +117,11 @@ function update.drill(data)
         local entity = data.entity
         local progress = data.progress
         if (entity.energy == 0) or (entity.mining_target == nil and check_drill_depleted(data)) then
-            change_signal(data, "red", STATES.STOPPED)
+            change_signal(data, STATES.STOPPED)
         elseif (entity.mining_progress == progress) then
-            change_signal(data, "yellow", STATES.FULL)
+            change_signal(data, STATES.FULL)
         else
-            change_signal(data, "green", STATES.RUNNING)
+            change_signal(data, STATES.RUNNING)
             data.progress = entity.mining_progress
         end
     end
@@ -130,26 +130,26 @@ end
 function update.machine(data)
     local entity = data.entity
     if entity.energy == 0 then
-        change_signal(data, "red", STATES.STOPPED)
+        change_signal(data, STATES.STOPPED)
     elseif entity.is_crafting() and (entity.crafting_progress < 1) and (entity.bonus_progress < 1) then
-        change_signal(data, "green", STATES.RUNNING)
+        change_signal(data, STATES.RUNNING)
     elseif (entity.crafting_progress >= 1) or (entity.bonus_progress >= 1) or (not entity.get_output_inventory().is_empty()) or (has_fluid_output_available(entity)) then
-        change_signal(data, "yellow", STATES.FULL)
+        change_signal(data, STATES.FULL)
     else
-        change_signal(data, "red", STATES.STOPPED)
+        change_signal(data, STATES.STOPPED)
     end
 end
 
 function update.furnace(data)
     local entity = data.entity
     if entity.energy == 0 then
-        change_signal(data, "red", STATES.STOPPED)
+        change_signal(data, STATES.STOPPED)
     elseif entity.is_crafting() and (entity.crafting_progress < 1) and (entity.bonus_progress < 1) then
-        change_signal(data, "green", STATES.RUNNING)
+        change_signal(data, STATES.RUNNING)
     elseif (entity.crafting_progress >= 1) or (entity.bonus_progress >= 1) or (not entity.get_output_inventory().is_empty()) or (has_fluid_output_available(entity)) then
-        change_signal(data, "yellow", STATES.FULL)
+        change_signal(data, STATES.FULL)
     else
-        change_signal(data, "red", STATES.STOPPED)
+        change_signal(data, STATES.STOPPED)
     end
 end
 
@@ -241,7 +241,7 @@ local function on_tick()
                     if show_bottlenecks > 0 then
                         update[data.update](data)
                     else
-                        change_signal(data, "off")
+                        change_signal(data, STATES.OFF)
                     end
                 else -- Rebuild the icon something broke it!
                     data.signal = new_signal(entity)
@@ -277,14 +277,15 @@ local function update_settings(event)
     if event.setting == "bottleneck-signals_per_tick" then
         bn_signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
     end
-    if event.setting == "bottleneck-show-green-signal" then
-        bn_show_green = settings.global["bottleneck-show-green-signal"].value
-        global.update_index = nil
-    end
-    if event.setting == "bottleneck-high-contrast" then
-        bn_high_contrast = settings.global["bottleneck-high-contrast"].value
-        global.update_index = nil
-    end
+	if event.setting == "bottleneck-show-running-as" then
+		STYLE[STATES.RUNNING] = LIGHT[settings.global["bottleneck-show-running-as"].value]
+	end
+	if event.setting == "bottleneck-show-stopped-as" then
+		STYLE[STATES.STOPPED] = LIGHT[settings.global["bottleneck-show-stopped-as"].value]
+	end
+	if event.setting == "bottleneck-show-full-as" then
+		STYLE[STATES.FULL] = LIGHT[settings.global["bottleneck-show-full-as"].value]
+	end
 end
 script.on_event(defines.events.on_runtime_mod_setting_changed, update_settings)
 
