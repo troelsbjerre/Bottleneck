@@ -195,4 +195,11 @@ local stoplight = {
     },
 }
 
-data:extend{stoplight}
+local key = {
+	type = "custom-input",
+	name = "bottleneck-hotkey",
+	key_sequence = "SHIFT + ALT_L",
+	consuming = "script-only",
+}
+
+data:extend({stoplight, key})

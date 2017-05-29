@@ -2,7 +2,6 @@
 --[[Bottleneck]]--
 -------------------------------------------------------------------------------
 
-local bn_enabled = (settings.global["bottleneck-enabled"].value and 1) or -1
 local bn_signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
 
 --[[ code modified from AutoDeconstruct mod by mindmix https://mods.factorio.com/mods/mindmix ]]
@@ -95,7 +94,7 @@ end
 
 local function new_signal(entity, variation)
     local signal = entity.surface.create_entity{name = "bottleneck-stoplight", position = get_signal_position_from(entity), force = entity.force}
-    signal.graphics_variation = (bn_enabled < 1 and LIGHT["off"]) or variation or LIGHT["red"]
+    signal.graphics_variation = (global.show_bottlenecks < 1 and LIGHT["off"]) or variation or LIGHT["red"]
     signal.destructible = false
     return signal
 end
@@ -267,13 +266,6 @@ local function on_tick()
 end
 
 local function update_settings(event)
-    if event.setting == "bottleneck-enabled" then
-        global.show_bottlenecks = settings.global["bottleneck-enabled"].value and 1 or -1
-        global.update_index = nil
-        --Toggling the setting doesn't disable right way, make sure the handler gets
-        --reenabled to toggle colors to their correct values.
-        script.on_event(defines.events.on_tick, on_tick)
-    end
     if event.setting == "bottleneck-signals_per_tick" then
         bn_signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
     end
@@ -303,7 +295,7 @@ end
 
 local function init()
     global.overlays = {}
-    global.show_bottlenecks = (bn_enabled and 1) or 0
+    global.show_bottlenecks = 1
     --register the tick handler if we are showing bottlenecks
     if global.show_bottlenecks then
         script.on_event(defines.events.on_tick, on_tick)
@@ -323,7 +315,7 @@ local function on_configuration_changed(event)
         local changes = event.mod_changes["Bottleneck"]
         if changes then -- THIS Mod has changed
             game.print("Bottleneck: Updated from ".. tostring(changes.old_version) .. " to " .. tostring(changes.new_version))
-            global.show_bottlenecks = (bn_enabled and 1) or 0
+            global.show_bottlenecks = global.show_bottlenecks or 1
             --Clean up old variables
             global.lights_per_tick = nil
             global.signals_per_tick = nil
@@ -334,6 +326,25 @@ local function on_configuration_changed(event)
         global.overlays = {}
         rebuild_overlays()
     end
+end
+
+--[[ Hotkey ]]--
+
+local function on_hotkey(event)
+	local player = game.players[event.player_index]
+	if not player.admin then
+		player.print('Bottleneck: You do not have privileges to toggle bottleneck')
+		return
+	end
+	global.update_index = nil
+	if global.show_bottlenecks == 1 then
+		global.show_bottlenecks = -1
+	else
+		global.show_bottlenecks = 1
+	end
+	--Toggling the setting doesn't disable right way, make sure the handler gets
+	--reenabled to toggle colors to their correct values.
+	script.on_event(defines.events.on_tick, on_tick)
 end
 
 --[[ Setup event handlers ]]--
@@ -347,6 +358,7 @@ local add_events = {e.on_built_entity, e.on_robot_built_entity}
 
 script.on_event(remove_events, remove_signal)
 script.on_event(add_events, built)
+script.on_event("bottleneck-hotkey", on_hotkey)
 
 --[[ Setup remote interface]]--
 local interface = {}

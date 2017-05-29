@@ -1,12 +1,5 @@
 data:extend{
     {
-        type = "bool-setting",
-        name = "bottleneck-enabled",
-        setting_type = "runtime-global",
-        default_value = true,
-        order = "bottleneck-aa[enabled]"
-    },
-    {
         type = "int-setting",
         name = "bottleneck-signals-per-tick",
         setting_type = "runtime-global",
