@@ -363,7 +363,7 @@ script.on_event("bottleneck-hotkey", on_hotkey)
 --[[ Setup remote interface]]--
 local interface = {}
 --is_enabled - return show_bottlenecks
-interface.enabled = function() return settings.global["bottleneck-enabled"].value end
+interface.enabled = function() return global.show_bottlenecks end
 --print the global to a file
 interface.print_global = function () game.write_file("Bottleneck/global.lua", serpent.block(global, {nocode=true, comment=false})) end
 --rebuild all icons
