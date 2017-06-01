@@ -51,9 +51,9 @@ local STATES = {
 
 local STYLE = {
 	LIGHT.off,
-	LIGHT.green,
-	LIGHT.red,
-	LIGHT.yellow,
+	LIGHT[settings.global["bottleneck-show-running-as"].value],
+	LIGHT[settings.global["bottleneck-show-stopped-as"].value],
+	LIGHT[settings.global["bottleneck-show-full-as"].value],
 }
 
 --Faster to just change the color than it is to check it first.
