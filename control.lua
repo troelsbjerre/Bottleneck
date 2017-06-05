@@ -118,7 +118,17 @@ function update.drill(data)
         if (entity.energy == 0) or (entity.mining_target == nil and check_drill_depleted(data)) then
             change_signal(data, STATES.STOPPED)
         elseif (entity.mining_progress == progress) then
-            change_signal(data, STATES.FULL)
+			local fluidbox = entity.fluidbox
+			if #fluidbox > 0 then
+				local fluid = fluidbox[1]
+				if fluid and fluid.amount > 0 then
+					change_signal(data, STATES.FULL)
+				else
+					change_signal(data, STATES.STOPPED)
+				end
+			else
+				change_signal(data, STATES.FULL)
+			end
         else
             change_signal(data, STATES.RUNNING)
             data.progress = entity.mining_progress
