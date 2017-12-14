@@ -26,6 +26,7 @@ local stoplight = {
     name = "bottleneck-stoplight",
     flags = {"not-blueprintable", "not-deconstructable", "not-on-map", "placeable-off-grid"},
     icon = "__Bottleneck__/graphics/red.png",
+    icon_size = 32,
     max_health = 100,
     selectable_in_game = false,
     mined_sound = nil,

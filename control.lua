@@ -25,8 +25,9 @@ end
 --https://forums.factorio.com/viewtopic.php?f=28&t=48100
 local function has_fluid_output_available(entity)
     local fluidbox = entity.fluidbox
-    if entity.recipe and fluidbox and #fluidbox > 0 then
-        for _, product in pairs(entity.recipe.products) do
+    local recipe = entity.get_recipe()
+    if recipe and fluidbox and #fluidbox > 0 then
+        for _, product in pairs(recipe.products) do
             if product.type == 'fluid' then
                 for i = 1, #fluidbox do
                     local fluid = fluidbox[i]
