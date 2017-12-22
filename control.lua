@@ -31,7 +31,7 @@ local function has_fluid_output_available(entity)
             if product.type == 'fluid' then
                 for i = 1, #fluidbox do
                     local fluid = fluidbox[i]
-                    if fluid and (fluid.type == product.name) and (fluid.amount > 0) then
+                    if fluid and (fluid.name == product.name) and (fluid.amount > 0) then
                         return true
                     end
                 end
