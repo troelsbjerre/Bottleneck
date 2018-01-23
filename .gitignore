@@ -1,3 +1,7 @@
+# Jetbrains stuff
+.idea
+*.iml
+
 # Compiled Lua sources
 luac.out
 

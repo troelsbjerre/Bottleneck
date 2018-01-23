@@ -225,7 +225,11 @@ local function rebuild_overlays()
     end
 end
 
-local function on_tick()
+local function on_tick(event)
+    if not (event.tick % settings.global["bottleneck-update-every-x-ticks"].value == 0) then
+        return
+    end
+
     local show_bottlenecks = global.show_bottlenecks
     if show_bottlenecks ~= 0 then
         local next = next --very slight perfomance improvment
