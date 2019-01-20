@@ -47,7 +47,7 @@ local LIGHT = {
 }
 
 local STATES = {
-    OFF = 1, RUNNING = 2, STOPPED = 3, FULL = 4,
+    OFF = 1, RUNNING = 2, STOPPED = 3, FULL = 4, BLOCKED = 5,
 }
 
 local STYLE = {
@@ -55,6 +55,7 @@ local STYLE = {
 	LIGHT[settings.global["bottleneck-show-running-as"].value],
 	LIGHT[settings.global["bottleneck-show-stopped-as"].value],
 	LIGHT[settings.global["bottleneck-show-full-as"].value],
+	LIGHT[settings.global["bottleneck-show-blocked-as"].value],
 }
 
 --Faster to just change the color than it is to check it first.
@@ -143,7 +144,9 @@ function update.machine(data)
         change_signal(data, STATES.STOPPED)
     elseif entity.is_crafting() and (entity.crafting_progress < 1) and (entity.bonus_progress < 1) then
         change_signal(data, STATES.RUNNING)
-    elseif (entity.crafting_progress >= 1) or (entity.bonus_progress >= 1) or (not entity.get_output_inventory().is_empty()) or (has_fluid_output_available(entity)) then
+    elseif (entity.crafting_progress >= 1) or (entity.bonus_progress >= 1) then
+        change_signal(data, STATES.BLOCKED)
+    elseif (not entity.get_output_inventory().is_empty()) or (has_fluid_output_available(entity)) then
         change_signal(data, STATES.FULL)
     else
         change_signal(data, STATES.STOPPED)
@@ -156,7 +159,9 @@ function update.furnace(data)
         change_signal(data, STATES.STOPPED)
     elseif entity.is_crafting() and (entity.crafting_progress < 1) and (entity.bonus_progress < 1) then
         change_signal(data, STATES.RUNNING)
-    elseif (entity.crafting_progress >= 1) or (entity.bonus_progress >= 1) or (not entity.get_output_inventory().is_empty()) or (has_fluid_output_available(entity)) then
+    elseif (entity.crafting_progress >= 1) or (entity.bonus_progress >= 1) then
+        change_signal(data, STATES.BLOCKED)
+    elseif (not entity.get_output_inventory().is_empty()) or (has_fluid_output_available(entity)) then
         change_signal(data, STATES.FULL)
     else
         change_signal(data, STATES.STOPPED)
@@ -288,6 +293,9 @@ local function update_settings(event)
 	end
 	if event.setting == "bottleneck-show-full-as" then
 		STYLE[STATES.FULL] = LIGHT[settings.global["bottleneck-show-full-as"].value]
+	end
+	if event.setting == "bottleneck-show-blocked-as" then
+		STYLE[STATES.BLOCKED] = LIGHT[settings.global["bottleneck-show-blocked-as"].value]
 	end
 end
 script.on_event(defines.events.on_runtime_mod_setting_changed, update_settings)
