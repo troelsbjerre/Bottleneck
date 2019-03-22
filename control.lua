@@ -339,6 +339,12 @@ local function on_configuration_changed(event)
     end
 end
 
+local function on_entity_cloned(event)
+	if event.destination.name == "bottleneck-stoplight" then
+		event.destination.destroy()
+	end
+end
+
 --[[ Hotkey ]]--
 
 local function on_hotkey(event)
@@ -370,6 +376,7 @@ local add_events = {e.on_built_entity, e.on_robot_built_entity, e.script_raised_
 script.on_event(remove_events, remove_signal)
 script.on_event(add_events, built)
 script.on_event("bottleneck-hotkey", on_hotkey)
+script.on_event({e.on_entity_cloned}, on_entity_cloned)
 
 --[[ Setup remote interface]]--
 local interface = {}
