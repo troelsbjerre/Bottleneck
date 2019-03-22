@@ -295,8 +295,8 @@ script.on_event(defines.events.on_runtime_mod_setting_changed, update_settings)
 -------------------------------------------------------------------------------
 --[[Init Events]]
 local function register_conditional_events()
-    if remote.interfaces["picker"] and remote.interfaces["picker"]["dolly_moved_entity_id"] then
-        script.on_event(remote.call("picker", "dolly_moved_entity_id"), entity_moved)
+    if remote.interfaces["PickerDollies"] and remote.interfaces["PickerDollies"]["dolly_moved_entity_id"] then
+        script.on_event(remote.call("PickerDollies", "dolly_moved_entity_id"), entity_moved)
     end
     if global.show_bottlenecks ~= 0 then
         --Register the tick handler if we are showing bottlenecks
