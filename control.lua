@@ -165,7 +165,7 @@ end
 
 --[[ A function that is called whenever an entity is built (both by player and by robots) ]]--
 local function built(event)
-    local entity = event.created_entity
+	local entity = event.created_entity or event.entity
     local data
     -- If the entity that's been built is an assembly machine or a furnace...
     if entity.type == "assembling-machine" then
