@@ -4,63 +4,17 @@
 
 local bn_signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
 
---[[ code modified from AutoDeconstruct mod by mindmix https://mods.factorio.com/mods/mindmix ]]
-local function check_drill_depleted(data)
-    local drill = data.entity
-    local position = drill.position
-    local range = drill.prototype.mining_drill_radius
-    local top_left = {x = position.x - range, y = position.y - range}
-    local bottom_right = {x = position.x + range, y = position.y + range}
-    local resources = drill.surface.find_entities_filtered{area={top_left, bottom_right}, type='resource'}
-    for _, resource in pairs(resources) do
-        if resource.prototype.resource_category == 'basic-solid' and resource.amount > 0 then
-            return false
-        end
-    end
-    data.drill_depleted = true
-    return true
-end
-
---Api request sent to make this faster
---https://forums.factorio.com/viewtopic.php?f=28&t=48100
-local function has_fluid_output_available(entity)
-    local fluidbox = entity.fluidbox
-    local recipe = entity.get_recipe()
-    if recipe and fluidbox and #fluidbox > 0 then
-        for _, product in pairs(recipe.products) do
-            if product.type == 'fluid' then
-                for i = 1, #fluidbox do
-                    local fluid = fluidbox[i]
-                    if fluid and (fluid.name == product.name) and (fluid.amount > 0) then
-                        return true
-                    end
-                end
-            end
-        end
-    end
-end
-
 local LIGHT = {
     off = 1, green = 2, red = 3, yellow = 4, blue = 5, redx = 6, yellowmin = 7,
     offsmall = 8,  greensmall = 9, redsmall = 10, yellowsmall = 11,
     bluesmall = 12, redxsmall = 13, yellowminsmall = 14,
 }
 
-local STATES = {
-    OFF = 1, RUNNING = 2, STOPPED = 3, FULL = 4,
-}
-
-local STYLE = {
-	LIGHT.off,
-	LIGHT[settings.global["bottleneck-show-running-as"].value],
-	LIGHT[settings.global["bottleneck-show-stopped-as"].value],
-	LIGHT[settings.global["bottleneck-show-full-as"].value],
-}
+local STYLE = {}
 
 --Faster to just change the color than it is to check it first.
-local function change_signal(data, status)
-    data.signal.graphics_variation = STYLE[status] or 1
-    data.status = status or STATES.OFF
+local function change_signal(data, style)
+    data.signal.graphics_variation = style or 1
 end
 
 --[[ Remove the LIGHT]]
@@ -111,56 +65,9 @@ local function entity_moved(event, data)
     end
 end
 
-local update = {}
-function update.drill(data)
-    if not data.drill_depleted then
-        local entity = data.entity
-        local progress = data.progress
-        if (entity.energy == 0) or (entity.mining_target == nil and check_drill_depleted(data)) then
-            change_signal(data, STATES.STOPPED)
-        elseif (entity.mining_progress == progress) then
-			local fluidbox = entity.fluidbox
-			if #fluidbox > 0 then
-				local fluid = fluidbox[1]
-				if fluid and fluid.amount > 0 then
-					change_signal(data, STATES.FULL)
-				else
-					change_signal(data, STATES.STOPPED)
-				end
-			else
-				change_signal(data, STATES.FULL)
-			end
-        else
-            change_signal(data, STATES.RUNNING)
-            data.progress = entity.mining_progress
-        end
-    end
-end
-
-function update.machine(data)
-    local entity = data.entity
-    if entity.energy == 0 then
-        change_signal(data, STATES.STOPPED)
-    elseif entity.is_crafting() and (entity.crafting_progress < 1) and (entity.bonus_progress < 1) then
-        change_signal(data, STATES.RUNNING)
-    elseif (entity.crafting_progress >= 1) or (entity.bonus_progress >= 1) or (not entity.get_output_inventory().is_empty()) or (has_fluid_output_available(entity)) then
-        change_signal(data, STATES.FULL)
-    else
-        change_signal(data, STATES.STOPPED)
-    end
-end
-
-function update.furnace(data)
-    local entity = data.entity
-    if entity.energy == 0 then
-        change_signal(data, STATES.STOPPED)
-    elseif entity.is_crafting() and (entity.crafting_progress < 1) and (entity.bonus_progress < 1) then
-        change_signal(data, STATES.RUNNING)
-    elseif (entity.crafting_progress >= 1) or (entity.bonus_progress >= 1) or (not entity.get_output_inventory().is_empty()) or (has_fluid_output_available(entity)) then
-        change_signal(data, STATES.FULL)
-    else
-        change_signal(data, STATES.STOPPED)
-    end
+function update_entity(data)
+	local entity = data.entity
+	change_signal(data, STYLE[entity.status])
 end
 
 --[[ A function that is called whenever an entity is built (both by player and by robots) ]]--
@@ -169,17 +76,18 @@ local function built(event)
     local data
     -- If the entity that's been built is an assembly machine or a furnace...
     if entity.type == "assembling-machine" then
-        data = { update = "machine" }
+		data = {}
+    elseif entity.type == "lab" then
+        data = {}
     elseif entity.type == "furnace" then
-        data = { update = "furnace" }
+        data = {}
     elseif entity.type == "mining-drill" and entity.name ~= "factory-port-marker" then
-        data = { update = "drill" }
+        data = {}
     end
 
     if data then
         data.entity = entity
         data.signal = new_signal(entity)
-        data.status = STATES.STOPPED
 
         --update[data.update](data)
         global.overlays[entity.unit_number] = data
@@ -249,7 +157,7 @@ local function on_tick()
             if entity.valid then -- if entity is valid, update it, otherwise remove the signal and the associated data
                 if data.signal.valid then
                     if show_bottlenecks > 0 then
-                        update[data.update](data)
+                        update_entity(data)
                     else
                         change_signal(data, STATES.OFF)
                     end
@@ -277,18 +185,27 @@ local function on_tick()
 end
 
 local function update_settings(event)
-    if event.setting == "bottleneck-signals_per_tick" then
-        bn_signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
-    end
-	if event.setting == "bottleneck-show-running-as" then
-		STYLE[STATES.RUNNING] = LIGHT[settings.global["bottleneck-show-running-as"].value]
-	end
-	if event.setting == "bottleneck-show-stopped-as" then
-		STYLE[STATES.STOPPED] = LIGHT[settings.global["bottleneck-show-stopped-as"].value]
-	end
-	if event.setting == "bottleneck-show-full-as" then
-		STYLE[STATES.FULL] = LIGHT[settings.global["bottleneck-show-full-as"].value]
-	end
+	bn_signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
+	STYLE[defines.entity_status.working] = LIGHT[settings.global["bottleneck-show-working"].value]
+	STYLE[defines.entity_status.no_power] = LIGHT[settings.global["bottleneck-show-no_power"].value]
+	STYLE[defines.entity_status.no_fuel] = LIGHT[settings.global["bottleneck-show-no_fuel"].value]
+	STYLE[defines.entity_status.no_recipe] = LIGHT[settings.global["bottleneck-show-no_recipe"].value]
+	STYLE[defines.entity_status.no_input_fluid] = LIGHT[settings.global["bottleneck-show-no_input_fluid"].value]
+	STYLE[defines.entity_status.no_research_in_progress] = LIGHT[settings.global["bottleneck-show-no_research_in_progress"].value]
+	STYLE[defines.entity_status.no_minable_resources] = LIGHT[settings.global["bottleneck-show-no_minable_resources"].value]
+	STYLE[defines.entity_status.low_input_fluid] = LIGHT[settings.global["bottleneck-show-low_input_fluid"].value]
+	STYLE[defines.entity_status.low_power] = LIGHT[settings.global["bottleneck-show-low_power"].value]
+	STYLE[defines.entity_status.disabled_by_control_behavior] = LIGHT[settings.global["bottleneck-show-disabled_by_control_behavior"].value]
+	STYLE[defines.entity_status.disabled_by_script] = LIGHT[settings.global["bottleneck-show-disabled_by_script"].value]
+	STYLE[defines.entity_status.fluid_ingredient_shortage] = LIGHT[settings.global["bottleneck-show-fluid_ingredient_shortage"].value]
+	STYLE[defines.entity_status.fluid_production_overload] = LIGHT[settings.global["bottleneck-show-fluid_production_overload"].value]
+	STYLE[defines.entity_status.item_ingredient_shortage] = LIGHT[settings.global["bottleneck-show-item_ingredient_shortage"].value]
+	STYLE[defines.entity_status.item_production_overload] = LIGHT[settings.global["bottleneck-show-item_production_overload"].value]
+	STYLE[defines.entity_status.marked_for_deconstruction] = LIGHT[settings.global["bottleneck-show-marked_for_deconstruction"].value]
+	STYLE[defines.entity_status.missing_required_fluid] = LIGHT[settings.global["bottleneck-show-missing_required_fluid"].value]
+	STYLE[defines.entity_status.missing_science_packs] = LIGHT[settings.global["bottleneck-show-missing_science_packs"].value]
+	STYLE[defines.entity_status.waiting_for_source_items] = LIGHT[settings.global["bottleneck-show-waiting_for_source_items"].value]
+	STYLE[defines.entity_status.waiting_for_space_in_destination] = LIGHT[settings.global["bottleneck-show-waiting_for_space_in_destination"].value]
 end
 script.on_event(defines.events.on_runtime_mod_setting_changed, update_settings)
 
@@ -365,7 +282,7 @@ script.on_load(on_load)
 
 local e=defines.events
 local remove_events = {e.on_player_mined_entity, e.on_robot_pre_mined, e.on_entity_died}
-local add_events = {e.on_built_entity, e.on_robot_built_entity}
+local add_events = {e.on_built_entity, e.on_robot_built_entity, e.on_script_raised_revive}
 
 script.on_event(remove_events, remove_signal)
 script.on_event(add_events, built)
