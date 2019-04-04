@@ -204,3 +204,14 @@ local key = {
 }
 
 data:extend({stoplight, key})
+data:extend{{
+    type = "sprite",
+    name = "bottle_white",
+    filename = "__Bottleneck__/graphics/white.png",
+    priority = "extra-high-no-scale",
+    width = 64,
+    height = 64,
+    flags = {"no-crop"},
+    scale = 0.5
+  }}
+  

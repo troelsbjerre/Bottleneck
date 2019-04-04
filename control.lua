@@ -32,6 +32,19 @@ local function remove_signal(event)
     end
 end
 
+local function remove_sprite(event)
+    local entity = event.entity
+    local index = entity.unit_number
+    local overlays = global.overlays
+    local data = overlays[index]
+    if data then
+        local sprite = data.sprite
+        if sprite then
+            rendering.destroy(sprite)
+        end
+    end
+end
+
 --[[ Calculates bottom center of the entity to place bottleneck there ]]
 local function get_signal_position_from(entity)
     local left_top = entity.prototype.selection_box.left_top
@@ -45,6 +58,25 @@ local function get_signal_position_from(entity)
     local y = right_bottom.y
     --Calculating bottom center of the selection box
     return {x = entity.position.x + x, y = entity.position.y + y}
+end
+
+local function get_render_position_from(entity)
+    local left_top = entity.prototype.selection_box.left_top
+    local right_bottom = entity.prototype.selection_box.right_bottom
+    --Calculating center of the selection box
+    local center = (left_top.x + right_bottom.x) / 2
+    local width = math.abs(left_top.x) + right_bottom.x
+    -- Set Shift here if needed, The offset looks better as it doesn't cover up fluid input information
+    -- Ignore shift for 1 tile entities
+    local x = (width > 1.25 and center - 0.5) or center
+    local y = right_bottom.y
+    --Calculating bottom center of the selection box
+    return {x = entity.position.x + x, y = entity.position.y + y - 0.25}
+end
+
+
+local function new_sprite(entity)
+    return rendering.draw_sprite{sprite="bottle_white", target=get_render_position_from(entity), surface=game.players[1].surface, tint={r=1}, x_scale=0.5, y_scale=0.5, visible=false}
 end
 
 local function new_signal(entity, variation)
@@ -66,7 +98,7 @@ local function entity_moved(event, data)
 end
 
 function update_entity(data)
-	local entity = data.entity
+    local entity = data.entity
 	change_signal(data, STYLE[entity.status])
 end
 
@@ -88,6 +120,7 @@ local function built(event)
     if data then
         data.entity = entity
         data.signal = new_signal(entity)
+        data.sprite = new_sprite(entity)
 
         --update[data.update](data)
         global.overlays[entity.unit_number] = data
@@ -163,6 +196,7 @@ local function on_tick()
                     end
                 else -- Rebuild the icon something broke it!
                     data.signal = new_signal(entity)
+                    data.sprite = new_signal(entity)
                 end
             else -- Machine is gone
                 if data.signal.valid then
@@ -291,6 +325,7 @@ local remove_events = {e.on_player_mined_entity, e.on_robot_pre_mined, e.on_enti
 local add_events = {e.on_built_entity, e.on_robot_built_entity, e.script_raised_revive, e.script_raised_built}
 
 script.on_event(remove_events, remove_signal)
+script.on_event(remove_events, remove_sprite)
 script.on_event(add_events, built)
 script.on_event("bottleneck-hotkey", on_hotkey)
 script.on_event({e.on_entity_cloned}, on_entity_cloned)
@@ -308,6 +343,7 @@ interface.entity_moved = entity_moved
 interface.get_lights = function() return LIGHT end
 interface.get_states = function() return STATES end
 interface.new_signal = new_signal
+interface.new_sprite = new_sprite
 interface.change_signal = change_signal --function(data, color) change_signal(signal, color) end
 --get a place position for a signal
 interface.get_position_for_signal = get_signal_position_from
