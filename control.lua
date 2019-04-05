@@ -10,11 +10,77 @@ local LIGHT = {
     bluesmall = 12, redxsmall = 13, yellowminsmall = 14,
 }
 
+local SPRITE = {
+    off = {
+        sprite = 'bottleneck_off',
+        visible=false
+    },
+    green = {
+        sprite = 'bottleneck_green',
+        visible=true
+    },
+    red = {
+        sprite = 'bottleneck_red',
+        visible=true
+    },
+    yellow = {
+        sprite = 'bottleneck_yellow',
+        visible=true
+    },
+    blue = {
+        sprite = 'bottleneck_blue',
+        visible=true
+    },
+    redx  = {
+        sprite = 'bottleneck_redx',
+        visible=true
+    },
+    yellowmin = {
+        sprite = 'bottleneck_yellowmin',
+        visible=true
+    },
+    offsmall = {
+        sprite = 'bottleneck_offsmall',
+        visible=true
+    },
+    greensmall = {
+        sprite = 'bottleneck_greensmall',
+        visible=true
+    },
+    redsmall = {
+        sprite = 'bottleneck_redsmall',
+        visible=true
+    },
+    yellowsmall = {
+        sprite = 'bottleneck_yellowsmall',
+        visible=true
+    },
+    bluesmall = {
+        sprite = 'bottleneck_bluesmall',
+        visible=true
+    },
+    redxsmall  = {
+        sprite = 'bottleneck_redxsmall',
+        visible=true
+    },
+    yellowminsmall = {
+        sprite = 'bottleneck_yellowminsmall',
+        visible=true
+    }
+}
+
 local STYLE = {}
+local SPRITE_STYLE = {}
 
 --Faster to just change the color than it is to check it first.
 local function change_signal(data, style)
     data.signal.graphics_variation = style or 1
+end
+
+local function change_sprite(data, style)
+    local sprite = data.sprite
+    rendering.set_sprite(sprite, style.sprite)
+    rendering.set_visible(sprite, style.visible)
 end
 
 --[[ Remove the LIGHT]]
@@ -76,7 +142,10 @@ end
 
 
 local function new_sprite(entity)
-    return rendering.draw_sprite{sprite="bottle_white", target=get_render_position_from(entity), surface=game.players[1].surface, tint={r=1}, x_scale=0.5, y_scale=0.5, visible=false}
+    local sprite = SPRITE_STYLE[entity.status]
+    sprite['target']=get_render_position_from(entity)
+    sprite['surface']=entity.surface
+    return rendering.draw_sprite (sprite)
 end
 
 local function new_signal(entity, variation)
@@ -240,6 +309,27 @@ local function update_settings(event)
 	STYLE[defines.entity_status.missing_science_packs] = LIGHT[settings.global["bottleneck-show-missing_science_packs"].value]
 	STYLE[defines.entity_status.waiting_for_source_items] = LIGHT[settings.global["bottleneck-show-waiting_for_source_items"].value]
 	STYLE[defines.entity_status.waiting_for_space_in_destination] = LIGHT[settings.global["bottleneck-show-waiting_for_space_in_destination"].value]
+
+    SPRITE_STYLE[defines.entity_status.working] = SPRITE[settings.global["bottleneck-show-working"].value]
+	SPRITE_STYLE[defines.entity_status.no_power] = SPRITE[settings.global["bottleneck-show-no_power"].value]
+	SPRITE_STYLE[defines.entity_status.no_fuel] = SPRITE[settings.global["bottleneck-show-no_fuel"].value]
+	SPRITE_STYLE[defines.entity_status.no_recipe] = SPRITE[settings.global["bottleneck-show-no_recipe"].value]
+	SPRITE_STYLE[defines.entity_status.no_input_fluid] = SPRITE[settings.global["bottleneck-show-no_input_fluid"].value]
+	SPRITE_STYLE[defines.entity_status.no_research_in_progress] = SPRITE[settings.global["bottleneck-show-no_research_in_progress"].value]
+	SPRITE_STYLE[defines.entity_status.no_minable_resources] = SPRITE[settings.global["bottleneck-show-no_minable_resources"].value]
+	SPRITE_STYLE[defines.entity_status.low_input_fluid] = SPRITE[settings.global["bottleneck-show-low_input_fluid"].value]
+	SPRITE_STYLE[defines.entity_status.low_power] = SPRITE[settings.global["bottleneck-show-low_power"].value]
+	SPRITE_STYLE[defines.entity_status.disabled_by_control_behavior] = SPRITE[settings.global["bottleneck-show-disabled_by_control_behavior"].value]
+	SPRITE_STYLE[defines.entity_status.disabled_by_script] = SPRITE[settings.global["bottleneck-show-disabled_by_script"].value]
+	SPRITE_STYLE[defines.entity_status.fluid_ingredient_shortage] = SPRITE[settings.global["bottleneck-show-fluid_ingredient_shortage"].value]
+	SPRITE_STYLE[defines.entity_status.fluid_production_overload] = SPRITE[settings.global["bottleneck-show-fluid_production_overload"].value]
+	SPRITE_STYLE[defines.entity_status.item_ingredient_shortage] = SPRITE[settings.global["bottleneck-show-item_ingredient_shortage"].value]
+	SPRITE_STYLE[defines.entity_status.item_production_overload] = SPRITE[settings.global["bottleneck-show-item_production_overload"].value]
+	SPRITE_STYLE[defines.entity_status.marked_for_deconstruction] = SPRITE[settings.global["bottleneck-show-marked_for_deconstruction"].value]
+	SPRITE_STYLE[defines.entity_status.missing_required_fluid] = SPRITE[settings.global["bottleneck-show-missing_required_fluid"].value]
+	SPRITE_STYLE[defines.entity_status.missing_science_packs] = SPRITE[settings.global["bottleneck-show-missing_science_packs"].value]
+	SPRITE_STYLE[defines.entity_status.waiting_for_source_items] = SPRITE[settings.global["bottleneck-show-waiting_for_source_items"].value]
+	SPRITE_STYLE[defines.entity_status.waiting_for_space_in_destination] = SPRITE[settings.global["bottleneck-show-waiting_for_space_in_destination"].value]
 end
 script.on_event(defines.events.on_runtime_mod_setting_changed, update_settings)
 

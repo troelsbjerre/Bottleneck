@@ -20,6 +20,91 @@ Prototype.empty_animation = {
     direction_count=1
 }
 
+local SPRITE_DATA = {
+    off = {
+        filename = "__Bottleneck__/graphics/white.png",
+        scale = 0.25
+    },
+    green = {
+        filename = "__Bottleneck__/graphics/white.png",
+        tint = {g = 1},
+        scale = 0.25
+    },
+    red = {
+        filename = "__Bottleneck__/graphics/white.png",
+        tint = {r = 1},
+        scale = 0.25
+    },
+    yellow = {
+        filename = "__Bottleneck__/graphics/white.png",
+        tint = {r = 1, g=1},
+        scale = 0.25
+    },
+    blue = {
+        filename = "__Bottleneck__/graphics/white.png",
+        tint = {b = 1},
+        scale = 0.25
+    },
+    redx  = {
+        filename = "__Bottleneck__/graphics/white_cross.png",
+        tint = {r = 1},
+        scale = 0.25
+    },
+    yellowmin = {
+        filename = "__Bottleneck__/graphics/white_minus.png",
+        tint = {r = 1, g=1},
+        scale = 0.25
+    },
+    greensmall = {
+        filename = "__Bottleneck__/graphics/white.png",
+        tint = {g = 1},
+        scale = 0.125
+    },
+    redsmall = {
+        filename = "__Bottleneck__/graphics/white.png",
+        tint = {r=0.3},
+        scale = 0.125
+    },
+    yellowsmall = {
+        filename = "__Bottleneck__/graphics/white.png",
+        tint = {r = 1, g=1},
+        scale = 0.125
+    },
+    bluesmall = {
+        filename = "__Bottleneck__/graphics/white.png",
+        tint = {b=1},
+        scale = 0.125
+    },
+    redxsmall  = {
+        filename = "__Bottleneck__/graphics/white_cross.png",
+        tint = {r = 1},
+        scale = 0.125
+    },
+    yellowminsmall = {
+        filename = "__Bottleneck__/graphics/white_minus.png",
+        tint = {r = 1, g=1},
+        scale = 0.125
+    }
+}
+
+local sprites = {}
+
+
+for sprite_name, sprite_data in pairs(SPRITE_DATA) do
+    local sprite = {
+        type = "sprite",
+        name = "bottleneck_" .. sprite_name,
+        priority = "extra-high-no-scale",
+        width = 64,
+        height = 64,
+        flags = {"no-crop"},
+    }
+    for k,v in pairs(sprite_data) do sprite[k] = v end
+    table.insert(sprites, sprite)
+end
+
+data:extend(sprites)
+
 --off, green, red, yellow, blue
 local stoplight = {
     type = "simple-entity-with-force",
@@ -204,14 +289,4 @@ local key = {
 }
 
 data:extend({stoplight, key})
-data:extend{{
-    type = "sprite",
-    name = "bottle_white",
-    filename = "__Bottleneck__/graphics/white.png",
-    priority = "extra-high-no-scale",
-    width = 64,
-    height = 64,
-    flags = {"no-crop"},
-    scale = 0.5
-  }}
   
