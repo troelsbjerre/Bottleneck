@@ -213,6 +213,7 @@ local function on_tick()
                         data.last_status = entity.status
                     else
                         change_sprite(data, SPRITE['off'])
+                        data.last_status = -1
                     end
                 else -- Rebuild the icon something broke it!
                     data.sprite = new_sprite(entity)
