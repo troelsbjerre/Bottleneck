@@ -4,12 +4,6 @@
 
 local bn_signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
 
-local LIGHT = {
-    off = 1, green = 2, red = 3, yellow = 4, blue = 5, redx = 6, yellowmin = 7,
-    offsmall = 8,  greensmall = 9, redsmall = 10, yellowsmall = 11,
-    bluesmall = 12, redxsmall = 13, yellowminsmall = 14,
-}
-
 local SPRITE = {
     off = {
         sprite = 'bottleneck_white',
@@ -81,13 +75,7 @@ local SPRITE = {
     }
 }
 
-local STYLE = {}
 local SPRITE_STYLE = {}
-
---Faster to just change the color than it is to check it first.
-local function change_signal(data, style)
-    data.signal.graphics_variation = style or 1
-end
 
 local function change_sprite(data, style)
     local sprite = data.sprite
@@ -96,21 +84,7 @@ local function change_sprite(data, style)
     rendering.set_color(sprite, style.tint)
 end
 
---[[ Remove the LIGHT]]
-local function remove_signal(event)
-    local entity = event.entity
-    local index = entity.unit_number
-    local overlays = global.overlays
-    local data = overlays[index]
-    if data then
-        local signal = data.signal
-        if signal and signal.valid then
-            signal.destroy()
-        end
-        overlays[index] = nil
-    end
-end
-
+--[[ Remove the SPRITE]]
 local function remove_sprite(event)
     local entity = event.entity
     local index = entity.unit_number
@@ -125,20 +99,6 @@ local function remove_sprite(event)
 end
 
 --[[ Calculates bottom center of the entity to place bottleneck there ]]
-local function get_signal_position_from(entity)
-    local left_top = entity.prototype.selection_box.left_top
-    local right_bottom = entity.prototype.selection_box.right_bottom
-    --Calculating center of the selection box
-    local center = (left_top.x + right_bottom.x) / 2
-    local width = math.abs(left_top.x) + right_bottom.x
-    -- Set Shift here if needed, The offset looks better as it doesn't cover up fluid input information
-    -- Ignore shift for 1 tile entities
-    local x = (width > 1.25 and center - 0.5) or center
-    local y = right_bottom.y
-    --Calculating bottom center of the selection box
-    return {x = entity.position.x + x, y = entity.position.y + y}
-end
-
 local function get_render_position_from(entity)
     local left_top = entity.prototype.selection_box.left_top
     local right_bottom = entity.prototype.selection_box.right_bottom
@@ -162,21 +122,9 @@ local function new_sprite(entity)
     return rendering.draw_sprite (sprite)
 end
 
-local function new_signal(entity, variation)
-    local signal = entity.surface.create_entity{name = "bottleneck-stoplight", position = get_signal_position_from(entity), force = entity.force}
-    signal.graphics_variation = (global.show_bottlenecks < 1 and LIGHT["off"]) or variation or LIGHT["red"]
-    signal.destructible = false
-    return signal
-end
-
 local function entity_moved(event, data)
     data = data or global.overlays[event.moved_entity.unit_number]
     if data then
-        if data.signal and data.signal.valid then
-            data.drill_depleted = false
-            local position = get_signal_position_from(event.moved_entity)
-            data.signal.teleport(position)
-        end
         if data.sprite then
             data.drill_depleted = false
             local position = get_render_position_from(event.moved_entity)
@@ -187,7 +135,6 @@ end
 
 function update_entity(data)
     local entity = data.entity
-	change_signal(data, STYLE[entity.status])
     change_sprite(data, SPRITE_STYLE[entity.status])
 end
 
@@ -208,7 +155,6 @@ local function built(event)
 
     if data then
         data.entity = entity
-        data.signal = new_signal(entity)
         data.sprite = new_sprite(entity)
 
         --update[data.update](data)
@@ -235,9 +181,6 @@ local function rebuild_overlays()
 
         --[[destroy any existing bottleneck-signals]]--
         rendering.clear('Bottleneck')
-        for _, stoplight in pairs(surface.find_entities_filtered{name="bottleneck-stoplight"}) do
-            stoplight.destroy()
-        end
 
         --[[Find all assembling machines within the bounds, and pretend that they were just built]]--
         for _, am in pairs(surface.find_entities_filtered{type="assembling-machine"}) do
@@ -278,21 +221,16 @@ local function on_tick()
         while index and (numiter < signals_per_tick) do
             local entity = data.entity
             if entity.valid then -- if entity is valid, update it, otherwise remove the signal and the associated data
-                if data.signal.valid then
+                if rendering.is_valid(data.sprite) then
                     if show_bottlenecks > 0 then
                         update_entity(data)
                     else
-                        change_signal(data, STATES.OFF)
                         change_sprite(data, SPRITE['off'])
                     end
                 else -- Rebuild the icon something broke it!
-                    data.signal = new_signal(entity)
                     data.sprite = new_sprite(entity)
                 end
             else -- Machine is gone
-                if data.signal.valid then
-                    data.signal.destroy() -- Signal is there; remove it
-                end
                 if data.sprite then
                     rendering.destroy(data.sprite)
                 end
@@ -314,26 +252,6 @@ end
 
 local function update_settings(event)
 	bn_signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
-	STYLE[defines.entity_status.working] = LIGHT[settings.global["bottleneck-show-working"].value]
-	STYLE[defines.entity_status.no_power] = LIGHT[settings.global["bottleneck-show-no_power"].value]
-	STYLE[defines.entity_status.no_fuel] = LIGHT[settings.global["bottleneck-show-no_fuel"].value]
-	STYLE[defines.entity_status.no_recipe] = LIGHT[settings.global["bottleneck-show-no_recipe"].value]
-	STYLE[defines.entity_status.no_input_fluid] = LIGHT[settings.global["bottleneck-show-no_input_fluid"].value]
-	STYLE[defines.entity_status.no_research_in_progress] = LIGHT[settings.global["bottleneck-show-no_research_in_progress"].value]
-	STYLE[defines.entity_status.no_minable_resources] = LIGHT[settings.global["bottleneck-show-no_minable_resources"].value]
-	STYLE[defines.entity_status.low_input_fluid] = LIGHT[settings.global["bottleneck-show-low_input_fluid"].value]
-	STYLE[defines.entity_status.low_power] = LIGHT[settings.global["bottleneck-show-low_power"].value]
-	STYLE[defines.entity_status.disabled_by_control_behavior] = LIGHT[settings.global["bottleneck-show-disabled_by_control_behavior"].value]
-	STYLE[defines.entity_status.disabled_by_script] = LIGHT[settings.global["bottleneck-show-disabled_by_script"].value]
-	STYLE[defines.entity_status.fluid_ingredient_shortage] = LIGHT[settings.global["bottleneck-show-fluid_ingredient_shortage"].value]
-	STYLE[defines.entity_status.fluid_production_overload] = LIGHT[settings.global["bottleneck-show-fluid_production_overload"].value]
-	STYLE[defines.entity_status.item_ingredient_shortage] = LIGHT[settings.global["bottleneck-show-item_ingredient_shortage"].value]
-	STYLE[defines.entity_status.item_production_overload] = LIGHT[settings.global["bottleneck-show-item_production_overload"].value]
-	STYLE[defines.entity_status.marked_for_deconstruction] = LIGHT[settings.global["bottleneck-show-marked_for_deconstruction"].value]
-	STYLE[defines.entity_status.missing_required_fluid] = LIGHT[settings.global["bottleneck-show-missing_required_fluid"].value]
-	STYLE[defines.entity_status.missing_science_packs] = LIGHT[settings.global["bottleneck-show-missing_science_packs"].value]
-	STYLE[defines.entity_status.waiting_for_source_items] = LIGHT[settings.global["bottleneck-show-waiting_for_source_items"].value]
-	STYLE[defines.entity_status.waiting_for_space_in_destination] = LIGHT[settings.global["bottleneck-show-waiting_for_space_in_destination"].value]
 
     SPRITE_STYLE[defines.entity_status.working] = SPRITE[settings.global["bottleneck-show-working"].value]
 	SPRITE_STYLE[defines.entity_status.no_power] = SPRITE[settings.global["bottleneck-show-no_power"].value]
@@ -406,14 +324,7 @@ local function on_configuration_changed(event)
     end
 end
 
-local function on_entity_cloned(event)
-	if event.destination.name == "bottleneck-stoplight" then
-		event.destination.destroy()
-	end
-end
-
 --[[ Hotkey ]]--
-
 local function on_hotkey(event)
 	local player = game.players[event.player_index]
 	if not player.admin then
