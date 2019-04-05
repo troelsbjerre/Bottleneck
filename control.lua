@@ -140,11 +140,6 @@ local function entity_moved(event, data)
     end
 end
 
-function update_entity(data)
-    local entity = data.entity
-    change_sprite(data, SPRITE_STYLE[entity.status])
-end
-
 --[[ A function that is called whenever an entity is built (both by player and by robots) ]]--
 local function built(event)
 	local entity = event.created_entity or event.entity
@@ -221,7 +216,8 @@ local function on_tick()
             if entity.valid then -- if entity is valid, update it, otherwise remove the signal and the associated data
                 if rendering.is_valid(data.sprite) then
                     if show_bottlenecks > 0 then
-                        update_entity(data)
+                        local entity = data.entity
+                        change_sprite(data, SPRITE_STYLE[entity.status])
                     else
                         change_sprite(data, SPRITE['off'])
                     end
