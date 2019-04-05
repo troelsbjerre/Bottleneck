@@ -177,6 +177,11 @@ local function entity_moved(event, data)
             local position = get_signal_position_from(event.moved_entity)
             data.signal.teleport(position)
         end
+        if data.sprite then
+            data.drill_depleted = false
+            local position = get_render_position_from(event.moved_entity)
+            rendering.set_target(data.sprite, position)
+        end
     end
 end
 
