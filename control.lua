@@ -138,6 +138,7 @@ local function built(event)
 
     data = {}
     data.entity = entity
+    data.last_status = entity.status
     data.sprite = new_sprite(entity)
 
     --update[data.update](data)
@@ -206,7 +207,10 @@ local function on_tick()
                 if rendering.is_valid(data.sprite) then
                     if show_bottlenecks > 0 then
                         local entity = data.entity
-                        change_sprite(data, SPRITE_STYLE[entity.status])
+                        if data.last_status ~= entity.status then
+                            change_sprite(data, SPRITE_STYLE[entity.status])
+                        end
+                        data.last_status = entity.status
                     else
                         change_sprite(data, SPRITE['off'])
                     end
