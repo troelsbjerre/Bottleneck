@@ -169,6 +169,7 @@ end
 function update_entity(data)
     local entity = data.entity
 	change_signal(data, STYLE[entity.status])
+    change_sprite(data, SPRITE_STYLE[entity.status])
 end
 
 --[[ A function that is called whenever an entity is built (both by player and by robots) ]]--
