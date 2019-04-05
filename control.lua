@@ -234,6 +234,7 @@ local function rebuild_overlays()
         --be more effiecent then scanning through all chunks like in previous version
 
         --[[destroy any existing bottleneck-signals]]--
+        rendering.clear('Bottleneck')
         for _, stoplight in pairs(surface.find_entities_filtered{name="bottleneck-stoplight"}) do
             stoplight.destroy()
         end
