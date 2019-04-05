@@ -12,31 +12,38 @@ local LIGHT = {
 
 local SPRITE = {
     off = {
-        sprite = 'bottleneck_off',
+        sprite = 'bottleneck_white',
+        tint = {r=0, g=0, b=0},
         visible=false
     },
     green = {
-        sprite = 'bottleneck_green',
+        sprite = 'bottleneck_white',
+        tint = {g = 1},
         visible=true
     },
     red = {
-        sprite = 'bottleneck_red',
+        sprite = 'bottleneck_white',
+        tint = {r = 1},
         visible=true
     },
     yellow = {
-        sprite = 'bottleneck_yellow',
+        sprite = 'bottleneck_white',
+        tint = {r = 1, g=1},
         visible=true
     },
     blue = {
-        sprite = 'bottleneck_blue',
+        sprite = 'bottleneck_white',
+        tint = {b = 1},
         visible=true
     },
     redx  = {
-        sprite = 'bottleneck_redx',
+        sprite = 'bottleneck_cross',
+        tint = {r = 1},
         visible=true
     },
     yellowmin = {
-        sprite = 'bottleneck_yellowmin',
+        sprite = 'bottleneck_minus',
+        tint = {r = 1, g=1},
         visible=true
     },
     offsmall = {
@@ -44,27 +51,32 @@ local SPRITE = {
         visible=true
     },
     greensmall = {
-        sprite = 'bottleneck_greensmall',
+        sprite = 'bottleneck_white_small',
+        tint = {g = 1},
         visible=true
     },
     redsmall = {
-        sprite = 'bottleneck_redsmall',
+        sprite = 'bottleneck_white_small',
+        tint = {r = 1},
         visible=true
     },
     yellowsmall = {
-        sprite = 'bottleneck_yellowsmall',
+        sprite = 'bottleneck_white_small',
+        tint = {r = 1, g=1},
         visible=true
     },
     bluesmall = {
-        sprite = 'bottleneck_bluesmall',
+        sprite = 'bottleneck_white_small',
         visible=true
     },
     redxsmall  = {
-        sprite = 'bottleneck_redxsmall',
+        sprite = 'bottleneck_cross_small',
+        tint = {r = 1},
         visible=true
     },
     yellowminsmall = {
-        sprite = 'bottleneck_yellowminsmall',
+        sprite = 'bottleneck_minus_small',
+        tint = {r = 1, g=1},
         visible=true
     }
 }
@@ -81,6 +93,7 @@ local function change_sprite(data, style)
     local sprite = data.sprite
     rendering.set_sprite(sprite, style.sprite)
     rendering.set_visible(sprite, style.visible)
+    rendering.set_color(sprite, style.tint)
 end
 
 --[[ Remove the LIGHT]]

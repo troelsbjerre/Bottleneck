@@ -21,68 +21,28 @@ Prototype.empty_animation = {
 }
 
 local SPRITE_DATA = {
-    off = {
+    white = {
         filename = "__Bottleneck__/graphics/white.png",
         scale = 0.25
     },
-    green = {
-        filename = "__Bottleneck__/graphics/white.png",
-        tint = {g = 1},
-        scale = 0.25
-    },
-    red = {
-        filename = "__Bottleneck__/graphics/white.png",
-        tint = {r = 1},
-        scale = 0.25
-    },
-    yellow = {
-        filename = "__Bottleneck__/graphics/white.png",
-        tint = {r = 1, g=1},
-        scale = 0.25
-    },
-    blue = {
-        filename = "__Bottleneck__/graphics/white.png",
-        tint = {b = 1},
-        scale = 0.25
-    },
-    redx  = {
+    cross = {
         filename = "__Bottleneck__/graphics/white_cross.png",
-        tint = {r = 1},
         scale = 0.25
     },
-    yellowmin = {
+    minus = {
         filename = "__Bottleneck__/graphics/white_minus.png",
-        tint = {r = 1, g=1},
         scale = 0.25
     },
-    greensmall = {
+    white_small = {
         filename = "__Bottleneck__/graphics/white.png",
-        tint = {g = 1},
         scale = 0.125
     },
-    redsmall = {
-        filename = "__Bottleneck__/graphics/white.png",
-        tint = {r=0.3},
-        scale = 0.125
-    },
-    yellowsmall = {
-        filename = "__Bottleneck__/graphics/white.png",
-        tint = {r = 1, g=1},
-        scale = 0.125
-    },
-    bluesmall = {
-        filename = "__Bottleneck__/graphics/white.png",
-        tint = {b=1},
-        scale = 0.125
-    },
-    redxsmall  = {
+    cross_small = {
         filename = "__Bottleneck__/graphics/white_cross.png",
-        tint = {r = 1},
         scale = 0.125
     },
-    yellowminsmall = {
+    minus_small = {
         filename = "__Bottleneck__/graphics/white_minus.png",
-        tint = {r = 1, g=1},
         scale = 0.125
     }
 }
