@@ -282,6 +282,7 @@ local function on_tick()
                         update_entity(data)
                     else
                         change_signal(data, STATES.OFF)
+                        change_sprite(data, SPRITE['off'])
                     end
                 else -- Rebuild the icon something broke it!
                     data.signal = new_signal(entity)
