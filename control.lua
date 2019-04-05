@@ -145,6 +145,7 @@ local function new_sprite(entity)
     local sprite = SPRITE_STYLE[entity.status]
     sprite['target']=get_render_position_from(entity)
     sprite['surface']=entity.surface
+    sprite['render_layer']='entity-info-icon'
     return rendering.draw_sprite (sprite)
 end
 
