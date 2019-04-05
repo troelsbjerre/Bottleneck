@@ -287,11 +287,14 @@ local function on_tick()
                     end
                 else -- Rebuild the icon something broke it!
                     data.signal = new_signal(entity)
-                    data.sprite = new_signal(entity)
+                    data.sprite = new_sprite(entity)
                 end
             else -- Machine is gone
                 if data.signal.valid then
                     data.signal.destroy() -- Signal is there; remove it
+                end
+                if data.sprite then
+                    rendering.destroy(data.sprite)
                 end
                 overlays[index] = nil -- forget about the machine
             end
