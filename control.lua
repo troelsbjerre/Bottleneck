@@ -125,6 +125,7 @@ local function new_sprite(entity)
     sprite['target_offset']=get_render_offset_from(entity)
     sprite['surface']=entity.surface
     sprite['render_layer']='entity-info-icon'
+    sprite['force']=entity.force
     return rendering.draw_sprite (sprite)
 end
 
