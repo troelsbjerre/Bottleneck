@@ -145,7 +145,7 @@ local function built(event)
 	local entity = event.created_entity or event.entity
     local data
 
-    if not ENTITY_TYPES[entity.type] or entity.name ~= "factory-port-marker" then return end
+    if (not ENTITY_TYPES[entity.type]) or entity.name == "factory-port-marker" then return end
 
     data = {}
     data.entity = entity
