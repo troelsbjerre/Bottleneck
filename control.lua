@@ -94,12 +94,10 @@ end
 --[[ Remove the SPRITE]]
 local function remove_sprite(event)
     local entity = event.entity
-    local index = entity.unit_number
-    local overlays = global.overlays
-    local data = overlays[index]
+    local data = global.overlays[entity.unit_number]
     if data then
         local sprite = data.sprite
-        if sprite then
+        if sprite and rendering.is_valid(sprite) then
             rendering.destroy(sprite)
         end
     end
