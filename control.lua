@@ -77,6 +77,13 @@ local SPRITE = {
 
 local SPRITE_STYLE = {}
 
+local ENTITY_TYPES = {
+    ['assembling-machine'] = true,
+    ['lab'] = true,
+    ['furnace'] = true,
+    ['mining-drill'] = true
+}
+
 local function change_sprite(data, style)
     local sprite = data.sprite
     rendering.set_sprite(sprite, style.sprite)
@@ -142,29 +149,20 @@ end
 local function built(event)
 	local entity = event.created_entity or event.entity
     local data
-    -- If the entity that's been built is an assembly machine or a furnace...
-    if entity.type == "assembling-machine" then
-		data = {}
-    elseif entity.type == "lab" then
-        data = {}
-    elseif entity.type == "furnace" then
-        data = {}
-    elseif entity.type == "mining-drill" and entity.name ~= "factory-port-marker" then
-        data = {}
-    end
 
-    if data then
-        data.entity = entity
-        data.sprite = new_sprite(entity)
+    if not ENTITY_TYPES[entity.type] or entity.name ~= "factory-port-marker" then return end
 
-        --update[data.update](data)
-        global.overlays[entity.unit_number] = data
-        -- if we are in the process of removing LIGHTs, we need to restart
-        -- that, since inserting into the overlays table may mess up the
-        -- iteration order.
-        if global.show_bottlenecks == -1 then
-            global.update_index = nil
-        end
+    data = {}
+    data.entity = entity
+    data.sprite = new_sprite(entity)
+
+    --update[data.update](data)
+    global.overlays[entity.unit_number] = data
+    -- if we are in the process of removing LIGHTs, we need to restart
+    -- that, since inserting into the overlays table may mess up the
+    -- iteration order.
+    if global.show_bottlenecks == -1 then
+        global.update_index = nil
     end
 end
 
