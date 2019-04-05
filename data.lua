@@ -94,7 +94,6 @@ for sprite_name, sprite_data in pairs(SPRITE_DATA) do
     local sprite = {
         type = "sprite",
         name = "bottleneck_" .. sprite_name,
-        priority = "extra-high-no-scale",
         width = 64,
         height = 64,
         flags = {"no-crop"},
