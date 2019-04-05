@@ -106,7 +106,7 @@ local function remove_sprite(event)
 end
 
 --[[ Calculates bottom center of the entity to place bottleneck there ]]
-local function get_render_position_from(entity)
+local function get_render_offset_from(entity)
     local left_top = entity.prototype.selection_box.left_top
     local right_bottom = entity.prototype.selection_box.right_bottom
     --Calculating center of the selection box
@@ -117,27 +117,17 @@ local function get_render_position_from(entity)
     local x = (width > 1.25 and center - 0.5) or center
     local y = right_bottom.y - 0.25
     --Calculating bottom center of the selection box
-    return {x = entity.position.x + x, y = entity.position.y + y}
+    return {x, y}
 end
 
 
 local function new_sprite(entity)
     local sprite = SPRITE_STYLE[entity.status]
-    sprite['target']=get_render_position_from(entity)
+    sprite['target']=entity
+    sprite['target_offset']=get_render_offset_from(entity)
     sprite['surface']=entity.surface
     sprite['render_layer']='entity-info-icon'
     return rendering.draw_sprite (sprite)
-end
-
-local function entity_moved(event, data)
-    data = data or global.overlays[event.moved_entity.unit_number]
-    if data then
-        if data.sprite then
-            data.drill_depleted = false
-            local position = get_render_position_from(event.moved_entity)
-            rendering.set_target(data.sprite, position)
-        end
-    end
 end
 
 --[[ A function that is called whenever an entity is built (both by player and by robots) ]]--
@@ -273,9 +263,6 @@ script.on_event(defines.events.on_runtime_mod_setting_changed, update_settings)
 -------------------------------------------------------------------------------
 --[[Init Events]]
 local function register_conditional_events()
-    if remote.interfaces["PickerDollies"] and remote.interfaces["PickerDollies"]["dolly_moved_entity_id"] then
-        script.on_event(remote.call("PickerDollies", "dolly_moved_entity_id"), entity_moved)
-    end
     if global.show_bottlenecks ~= 0 then
         --Register the tick handler if we are showing bottlenecks
         script.on_event(defines.events.on_tick, on_tick)
@@ -360,7 +347,6 @@ interface.print_global = function () game.write_file("Bottleneck/global.lua", se
 --rebuild all icons
 interface.rebuild = rebuild_overlays
 --allow other mods to interact with bottleneck
-interface.entity_moved = entity_moved
 interface.get_lights = function() return LIGHT end
 interface.get_states = function() return STATES end
 interface.new_signal = new_signal
