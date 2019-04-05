@@ -310,7 +310,7 @@ local function on_configuration_changed(event)
 end
 
 --[[ Hotkey ]]--
-local function on_hotkey(event)
+local function toggle_bottleneck(event)
 	local player = game.players[event.player_index]
 	if not player.admin then
 		player.print('Bottleneck: You do not have privileges to toggle bottleneck')
@@ -318,13 +318,21 @@ local function on_hotkey(event)
 	end
 	global.update_index = nil
 	if global.show_bottlenecks == 1 then
-		global.show_bottlenecks = -1
+        global.show_bottlenecks = -1
+        player.set_shortcut_toggled("toggle-bottleneck", false)
 	else
-		global.show_bottlenecks = 1
+        global.show_bottlenecks = 1
+        player.set_shortcut_toggled("toggle-bottleneck", true)
 	end
 	--Toggling the setting doesn't disable right way, make sure the handler gets
 	--reenabled to toggle colors to their correct values.
-	script.on_event(defines.events.on_tick, on_tick)
+    script.on_event(defines.events.on_tick, on_tick)
+end
+
+local function on_shortcut(event)
+    if event.prototype_name == "toggle-bottleneck" then
+        toggle_bottleneck(event)
+    end
 end
 
 --[[ Setup event handlers ]]--
@@ -339,8 +347,9 @@ local add_events = {e.on_built_entity, e.on_robot_built_entity, e.script_raised_
 script.on_event(remove_events, remove_signal)
 script.on_event(remove_events, remove_sprite)
 script.on_event(add_events, built)
-script.on_event("bottleneck-hotkey", on_hotkey)
+script.on_event("bottleneck-hotkey", toggle_bottleneck)
 script.on_event({e.on_entity_cloned}, on_entity_cloned)
+script.on_event(e.on_lua_shortcut, on_shortcut)
 
 --[[ Setup remote interface]]--
 local interface = {}

@@ -72,4 +72,40 @@ local key = {
 }
 
 data:extend({key})
+
+data:extend({
+    {
+      type = 'shortcut',
+      name = 'toggle-bottleneck',
+      toggleable = true,
+      order = 'a[alt-mode]-b[copy]',
+      action = 'lua',
+      localised_name = {'shortcut.toggle-bottleneck'},
+      icon = 
+      {
+        filename = "__Bottleneck__/graphics/shortcut/shortcut_32.png",
+        priority = 'extra-high-no-scale',
+        size = 32,
+        scale = 1,
+        flags = {'icon'}
+      },
+      small_icon =
+      {
+        filename = "__Bottleneck__/graphics/shortcut/shortcut_24.png",
+        priority = 'extra-high-no-scale',
+        size = 24,
+        scale = 1,
+        flags = {'icon'}
+      },
+      disabled_small_icon =
+      {
+        filename = "__Bottleneck__/graphics/shortcut/shortcut_24_disabled.png",
+        priority = 'extra-high-no-scale',
+        size = 24,
+        scale = 1,
+        flags = {'icon'}
+      }
+    }
+  })
+  
   
