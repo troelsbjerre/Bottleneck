@@ -377,6 +377,7 @@ local function init()
 end
 
 local function on_load()
+    update_settings(nil)
     register_conditional_events()
 end
 
