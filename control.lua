@@ -94,7 +94,7 @@ end
 --[[ Remove the SPRITE]]
 local function remove_sprite(event)
     local entity = event.entity
-    local data = global.overlays[entity.unit_number]
+    local data = global.overlays[entity.force.name][entity.unit_number]
     if data then
         local sprite = data.sprite
         if sprite and rendering.is_valid(sprite) then
@@ -141,8 +141,7 @@ local function built(event)
     data.last_status = entity.status
     data.sprite = new_sprite(entity)
 
-    --update[data.update](data)
-    global.overlays[entity.unit_number] = data
+    global.overlays[entity.force.name][entity.unit_number] = data
     -- if we are in the process of removing LIGHTs, we need to restart
     -- that, since inserting into the overlays table may mess up the
     -- iteration order.
@@ -151,9 +150,16 @@ local function built(event)
     end
 end
 
+local function reset_overlays()
+    global.overlays = {}
+    for _, force in pairs(game.forces) do
+        global.overlays[force.name] = {}
+    end
+end
+
 local function rebuild_overlays()
     --[[Setup the global overlays table This table contains the machine entity, the signal entity and the freeze variable]]--
-    global.overlays = {}
+    reset_overlays()
     global.update_index = nil
     --game.print("Bottleneck: Rebuilding data from scratch")
 
@@ -183,6 +189,11 @@ local function rebuild_overlays()
 end
 
 local function on_tick()
+
+
+end
+
+local function on_tick_old()
     local show_bottlenecks = global.show_bottlenecks
     if show_bottlenecks ~= 0 then
         local next = next --very slight perfomance improvment
@@ -276,18 +287,27 @@ local function register_conditional_events()
 end
 
 local function init()
-    global.overlays = {}
-    global.show_bottlenecks = 1
+    init_forces()
+    update_settings()
+    
     --register the tick handler if we are showing bottlenecks
-    if global.show_bottlenecks then
         script.on_event(defines.events.on_tick, on_tick)
-    end
-    rebuild_overlays()
     register_conditional_events()
 end
 
+local function init_forces()
+    global.force_config = {}
+    for _, force in pairs(game.forces) do
+        global.force_config[force.name] = {}
+        global.force_config[force.name]['players'] = {}
+        for _, player in pairs(force.players) do
+            table.insert(global.force_config[force.name]['players'], player.index)
+    end
+        global.force_config[force.name]['show_bottlenecks'] = #global.force_config[force.name]['players'] > 0
+    end
+end
+
 local function on_load()
-    update_settings(nil)
     register_conditional_events()
 end
 
@@ -298,16 +318,21 @@ local function on_configuration_changed(event)
         local changes = event.mod_changes["Bottleneck"]
         if changes then -- THIS Mod has changed
             game.print("Bottleneck: Updated from ".. tostring(changes.old_version) .. " to " .. tostring(changes.new_version))
-            global.show_bottlenecks = global.show_bottlenecks or 1
+            if not global.force_config then
+                init_forces()
+            end
             --Clean up old variables
+            global.show_bottlenecks = nil
             global.lights_per_tick = nil
             global.signals_per_tick = nil
             global.showbottlenecks = nil
             global.output_idle_signal = nil
             global.high_contrast = nil
         end
-        global.overlays = {}
-        rebuild_overlays()
+        update_settings()
+    end
+end
+
     end
 end
 
@@ -366,6 +391,6 @@ interface.get_sprites = function() return SPRITE end
 interface.new_sprite = new_sprite
 interface.change_sprite = function(data, style) change_sprite(data, SPRITE_STYLE[style]) end
 --get the signal data associated with an entity
-interface.get_signal_data = function(unit_number) return global.overlays[unit_number] end
+interface.get_sprite_data = function(force_name, unit_number) return global.overlays[force.name][unit_number] end
 
 remote.add_interface("Bottleneck", interface)
