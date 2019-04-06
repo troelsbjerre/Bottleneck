@@ -266,6 +266,23 @@ local function update_settings()
 end
 script.on_event(defines.events.on_runtime_mod_setting_changed, update_settings)
 
+local function toggle_player(event, remove)
+    remove = remove or false
+    local player = game.players[event.player_index]
+    local players = global.force_config[player.force.name]['players']
+    if player.is_shortcut_toggled("toggle-bottleneck") or remove then
+        table.remove(players, tablefind(players, player_index))
+        global.force_config[player.force.name]['show_bottlenecks'] = #player > 0
+        player.set_shortcut_toggled("toggle-bottleneck", false)
+    else
+        table.insert(players, player_index)
+        global.force_config[player.force.name]['show_bottlenecks'] = true
+        global.force_config[player.force.name]['bottlenecks_hidden'] = false
+        player.set_shortcut_toggled("toggle-bottleneck", true)
+    end
+    global.force_config[player.force.name]['players'] = players
+end
+
 -------------------------------------------------------------------------------
 --[[Init Events]]
 local function register_conditional_events()
@@ -294,6 +311,9 @@ local function init_forces()
     end
         global.force_config[force.name]['show_bottlenecks'] = #global.force_config[force.name]['players'] > 0
     end
+    for _, player in pairs(game.players) do
+        toggle_player({player_index= player.index})
+end
 end
 
 local function on_load()
@@ -326,29 +346,13 @@ end
     end
 end
 
---[[ Hotkey ]]--
-local function toggle_bottleneck(event)
-	local player = game.players[event.player_index]
-	if not player.admin then
-		player.print('Bottleneck: You do not have privileges to toggle bottleneck')
-		return
+local function on_player_removed(event)
+    toggle_player(event, true)
 	end
-	global.update_index = nil
-	if global.show_bottlenecks == 1 then
-        global.show_bottlenecks = -1
-        player.set_shortcut_toggled("toggle-bottleneck", false)
-	else
-        global.show_bottlenecks = 1
-        player.set_shortcut_toggled("toggle-bottleneck", true)
-	end
-	--Toggling the setting doesn't disable right way, make sure the handler gets
-	--reenabled to toggle colors to their correct values.
-    script.on_event(defines.events.on_tick, on_tick)
-end
 
 local function on_shortcut(event)
     if event.prototype_name == "toggle-bottleneck" then
-        toggle_bottleneck(event)
+        toggle_player(event)
     end
 end
 
@@ -361,7 +365,7 @@ local e=defines.events
 local add_events = {e.on_built_entity, e.on_robot_built_entity, e.script_raised_revive, e.script_raised_built}
 
 script.on_event(add_events, built)
-script.on_event("bottleneck-hotkey", toggle_bottleneck)
+script.on_event({"bottleneck-hotkey", e.on_player_joined_game}, toggle_player)
 script.on_event({e.on_entity_cloned}, on_entity_cloned)
 script.on_event(e.on_lua_shortcut, on_shortcut)
 
@@ -381,3 +385,14 @@ interface.change_sprite = function(data, style) change_sprite(data, SPRITE_STYLE
 interface.get_sprite_data = function(force_name, unit_number) return global.overlays[force.name][unit_number] end
 
 remote.add_interface("Bottleneck", interface)
+
+-- [ Utilities ]
+
+function tablefind(tab,el)
+    for index, value in pairs(tab) do
+        if value == el then
+            return index
+        end
+    end
+end
+    
