@@ -360,13 +360,9 @@ interface.print_global = function () game.write_file("Bottleneck/global.lua", se
 --rebuild all icons
 interface.rebuild = rebuild_overlays
 --allow other mods to interact with bottleneck
-interface.get_lights = function() return LIGHT end
-interface.get_states = function() return STATES end
-interface.new_signal = new_signal
+interface.get_sprites = function() return SPRITE end
 interface.new_sprite = new_sprite
-interface.change_signal = change_signal --function(data, color) change_signal(signal, color) end
---get a place position for a signal
-interface.get_position_for_signal = get_signal_position_from
+interface.change_sprite = function(data, style) change_sprite(data, SPRITE_STYLE[style]) end
 --get the signal data associated with an entity
 interface.get_signal_data = function(unit_number) return global.overlays[unit_number] end
 
