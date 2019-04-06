@@ -208,8 +208,6 @@ end
                         local entity = data.entity
                         if data.last_status ~= entity.status then
                             change_sprite(data, SPRITE_STYLE[entity.status])
-                        else
-                            numiter = numiter -1
                         end
                         data.last_status = entity.status
                     else
