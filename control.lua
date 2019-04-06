@@ -237,7 +237,7 @@ local function on_tick_old()
     end
 end
 
-local function update_settings()
+local function load_settings()
 	bn_signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
 
     SPRITE_STYLE[defines.entity_status.working] = SPRITE[settings.global["bottleneck-show-working"].value]
@@ -260,7 +260,9 @@ local function update_settings()
 	SPRITE_STYLE[defines.entity_status.missing_science_packs] = SPRITE[settings.global["bottleneck-show-missing_science_packs"].value]
 	SPRITE_STYLE[defines.entity_status.waiting_for_source_items] = SPRITE[settings.global["bottleneck-show-waiting_for_source_items"].value]
 	SPRITE_STYLE[defines.entity_status.waiting_for_space_in_destination] = SPRITE[settings.global["bottleneck-show-waiting_for_space_in_destination"].value]
-    
+end
+local function update_settings()
+    load_settings()
     rebuild_overlays()
 end
 script.on_event(defines.events.on_runtime_mod_setting_changed, update_settings)
@@ -296,6 +298,7 @@ local function init_forces()
 end
 
 local function on_load()
+    load_settings()
     register_conditional_events()
 end
 
