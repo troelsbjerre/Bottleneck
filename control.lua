@@ -113,7 +113,7 @@ local function new_sprite(entity)
     sprite['target_offset']=get_render_offset_from(entity)
     sprite['surface']=entity.surface
     sprite['render_layer']='entity-info-icon'
-    sprite['force']=entity.force
+    sprite['forces']={entity.force}
     return rendering.draw_sprite (sprite)
 end
 
@@ -343,7 +343,34 @@ local function on_configuration_changed(event)
     end
 end
 
+local function on_force_created(event)
+    local force = event.force.name
+    
+    global.force_config[force] = {}
+    global.force_config[force]['players'] = {}
+    if force.players then
+    for _, player in pairs(force.players) do
+        table.insert(global.force_config[force]['players'], player.index)
+        toggle_player({player_index= player.index})
     end
+    end
+    global.force_config[force]['show_bottlenecks'] = #global.force_config[force]['players'] > 0
+
+    rebuild_overlays()
+end
+
+local function on_forces_merged(event)
+    local force = event.destination.name
+    local source = event.source_name
+
+    for _, player in pairs(global.force_config[source]['players']) do
+        table.insert(global.force_config[force]['players'], player)
+    end
+    global.force_config[force]['show_bottlenecks'] = #global.force_config[force]['players'] > 0
+
+    global.force_config[source] = nil
+
+    rebuild_overlays()
 end
 
 local function on_player_removed(event)
@@ -368,6 +395,8 @@ script.on_event(add_events, built)
 script.on_event({"bottleneck-hotkey", e.on_player_joined_game}, toggle_player)
 script.on_event({e.on_entity_cloned}, on_entity_cloned)
 script.on_event(e.on_lua_shortcut, on_shortcut)
+script.on_event(e.on_force_created, on_force_created)
+script.on_event(e.on_forces_merged, on_forces_merged)
 
 --[[ Setup remote interface]]--
 local interface = {}
