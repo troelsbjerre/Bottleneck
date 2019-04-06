@@ -142,13 +142,13 @@ local function reset_overlays()
     global.overlays = {}
     for _, force in pairs(game.forces) do
         global.overlays[force.name] = {}
+        global.force_config[force.name]['update_index'] = nil
     end
 end
 
 local function rebuild_overlays()
     --[[Setup the global overlays table This table contains the machine entity, the signal entity and the freeze variable]]--
     reset_overlays()
-    global.update_index = nil
     --game.print("Bottleneck: Rebuilding data from scratch")
 
     --[[Find all assembling machines on the map. Check each surface]]--
@@ -177,20 +177,20 @@ local function rebuild_overlays()
 end
 
 local function on_tick()
-
-
+    local forces = {}
+    for _, force in pairs(game.forces) do
+        if global.force_config[force.name]['show_bottlenecks'] then
+            table.insert(forces, force.name)
+        elseif not global.force_config[force.name]['bottlenecks_hidden'] then
+            table.insert(forces, force.name)
 end
+    end
 
-local function on_tick_old()
-    local show_bottlenecks = global.show_bottlenecks
-    if show_bottlenecks ~= 0 then
-        local next = next --very slight perfomance improvment
+    local signals_per_force = bn_signals_per_tick/#forces
 
-        local signals_per_tick = bn_signals_per_tick
-
-        local overlays = global.overlays
-        local index = global.update_index
-        local data
+    for _, force in pairs(forces) do
+        local overlays = global.overlays[force]
+        local index = global.force_config[force]['update_index']
 
         --check for existing data at index
         if index and overlays[index] then
@@ -200,14 +200,16 @@ local function on_tick_old()
         end
 
         local numiter = 0
-        while index and (numiter < signals_per_tick) do
+        while index and (numiter < signals_per_force) do
             local entity = data.entity
             if entity.valid then -- if entity is valid, update it, otherwise remove the signal and the associated data
                 if rendering.is_valid(data.sprite) then
-                    if show_bottlenecks > 0 then
+                    if global.force_config[force]['show_bottlenecks'] then
                         local entity = data.entity
                         if data.last_status ~= entity.status then
                             change_sprite(data, SPRITE_STYLE[entity.status])
+                        else
+                            numiter = numiter -1
                         end
                         data.last_status = entity.status
                     else
@@ -226,15 +228,14 @@ local function on_tick_old()
             numiter = numiter + 1
             index, data = next(overlays, index)
         end
-        global.update_index = index
+        global.force_config[force]['update_index'] = index
         -- if we have reached the end of the list (i.e., have removed all LIGHTs),
         -- pause updating until enabled by hotkey next
-        if not index and show_bottlenecks <= 0 then
-            global.show_bottlenecks = 0
-            --We have cycled everything to off, disable the tick handler
-            script.on_event(defines.events.on_tick, nil)
+        if not index and not global.force_config[force]['show_bottlenecks'] then
+            global.force_config[force]['bottlenecks_hidden'] = true
         end
     end
+
 end
 
 local function load_settings()
