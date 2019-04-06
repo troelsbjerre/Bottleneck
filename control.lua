@@ -91,18 +91,6 @@ local function change_sprite(data, style)
     rendering.set_color(sprite, style.tint)
 end
 
---[[ Remove the SPRITE]]
-local function remove_sprite(event)
-    local entity = event.entity
-    local data = global.overlays[entity.force.name][entity.unit_number]
-    if data then
-        local sprite = data.sprite
-        if sprite and rendering.is_valid(sprite) then
-            rendering.destroy(sprite)
-        end
-    end
-end
-
 --[[ Calculates bottom center of the entity to place bottleneck there ]]
 local function get_render_offset_from(entity)
     local left_top = entity.prototype.selection_box.left_top
@@ -368,11 +356,8 @@ script.on_configuration_changed(on_configuration_changed)
 script.on_load(on_load)
 
 local e=defines.events
-local remove_events = {e.on_player_mined_entity, e.on_robot_pre_mined, e.on_entity_died, e.script_raised_destroy}
 local add_events = {e.on_built_entity, e.on_robot_built_entity, e.script_raised_revive, e.script_raised_built}
 
-script.on_event(remove_events, remove_signal)
-script.on_event(remove_events, remove_sprite)
 script.on_event(add_events, built)
 script.on_event("bottleneck-hotkey", toggle_bottleneck)
 script.on_event({e.on_entity_cloned}, on_entity_cloned)
