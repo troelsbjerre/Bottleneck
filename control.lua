@@ -238,7 +238,7 @@ local function on_tick()
     end
 end
 
-local function update_settings(event)
+local function update_settings()
 	bn_signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
 
     SPRITE_STYLE[defines.entity_status.working] = SPRITE[settings.global["bottleneck-show-working"].value]
@@ -261,6 +261,8 @@ local function update_settings(event)
 	SPRITE_STYLE[defines.entity_status.missing_science_packs] = SPRITE[settings.global["bottleneck-show-missing_science_packs"].value]
 	SPRITE_STYLE[defines.entity_status.waiting_for_source_items] = SPRITE[settings.global["bottleneck-show-waiting_for_source_items"].value]
 	SPRITE_STYLE[defines.entity_status.waiting_for_space_in_destination] = SPRITE[settings.global["bottleneck-show-waiting_for_space_in_destination"].value]
+    
+    rebuild_overlays()
 end
 script.on_event(defines.events.on_runtime_mod_setting_changed, update_settings)
 
