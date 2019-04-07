@@ -136,6 +136,7 @@ local function new_sprite(entity)
     sprite['surface']=entity.surface
     sprite['render_layer']='entity-info-icon'
     sprite['forces']={entity.force}
+    sprite['players'] = global.force_config[entity.force.name].players
     return rendering.draw_sprite (sprite)
 end
 
@@ -232,6 +233,9 @@ end
                             change_sprite(data, SPRITE_STYLE[entity.status])
                         end
                         data.last_status = entity.status
+                        if global.force_config[force]['update_players'] then
+                            rendering.set_players(data.sprite, global.force_config[data.entity.force.name].players)
+                        end
                     else
                         change_sprite(data, SPRITE['off'])
                         data.last_status = -1
@@ -251,6 +255,9 @@ end
         global.force_config[force]['update_index'] = index
         -- if we have reached the end of the list (i.e., have removed all LIGHTs),
         -- pause updating until enabled by hotkey next
+        if not index and not global.force_config[force]['update_players'] then
+            global.force_config[force]['update_players'] = false
+        end
         if not index and not global.force_config[force]['show_bottlenecks'] then
             global.force_config[force]['bottlenecks_hidden'] = true
         end
@@ -288,13 +295,13 @@ local function update_settings()
 end
 script.on_event(defines.events.on_runtime_mod_setting_changed, update_settings)
 
-local function toggle_player(event, remove)
+local function toggle_player(event, remove, add)
     remove = remove or false
     local player = game.players[event.player_index]
     local players = global.force_config[player.force.name]['players']
-    if player.is_shortcut_toggled("toggle-bottleneck") or remove then
+    if (player.is_shortcut_toggled("toggle-bottleneck") or remove) and not add then
         table.remove(players, tablefind(players, player_index))
-        global.force_config[player.force.name]['show_bottlenecks'] = #player > 0
+        global.force_config[player.force.name]['show_bottlenecks'] = #players > 0
         player.set_shortcut_toggled("toggle-bottleneck", false)
     else
         players[#players + 1] = player.index
@@ -302,7 +309,9 @@ local function toggle_player(event, remove)
         global.force_config[player.force.name]['bottlenecks_hidden'] = false
         player.set_shortcut_toggled("toggle-bottleneck", true)
     end
-    global.force_config[player.force.name]['players'] = players
+    global.force_config[player.force.name]['players'] = table_unique(players)
+    global.force_config[player.force.name]['update_players'] = true
+    global.force_config[player.force.name]['update_index'] = nil
 end
 
 -------------------------------------------------------------------------------
@@ -327,15 +336,11 @@ local function init_forces()
     global.force_config = {}
     for _, force in pairs(game.forces) do
         global.force_config[force.name] = {}
-        local players = {}
-        for _, player in pairs(force.players) do
-            players[#players+1] = player.index
-    end
-        global.force_config[force.name]['players'] = players
-        global.force_config[force.name]['show_bottlenecks'] = #global.force_config[force.name]['players'] > 0
+        global.force_config[force.name]['players'] = {}
+        global.force_config[force.name]['show_bottlenecks'] = false
     end
     for _, player in pairs(game.players) do
-        toggle_player({player_index= player.index})
+        toggle_player({player_index= player.index},false,true)
 end
 end
 
@@ -371,15 +376,7 @@ local function on_force_created(event)
     
     global.force_config[force] = {}
     global.force_config[force]['players'] = {}
-    if force.players then
-        local players = {}
-    for _, player in pairs(force.players) do
-            players[#players + 1] = player.index
-        toggle_player({player_index= player.index})
-    end
-        global.force_config[force]['players'] = players
-    end
-    global.force_config[force]['show_bottlenecks'] = #global.force_config[force]['players'] > 0
+    global.force_config[force]['show_bottlenecks'] = false
 
     rebuild_overlays()
 end
@@ -419,7 +416,8 @@ local e=defines.events
 local add_events = {e.on_built_entity, e.on_robot_built_entity, e.script_raised_revive, e.script_raised_built}
 
 script.on_event(add_events, built)
-script.on_event({"bottleneck-hotkey", e.on_player_joined_game}, toggle_player)
+script.on_event("bottleneck-hotkey", toggle_player)
+script.on_event(e.on_player_joined_game, function(event) toggle_player(event,false,true) end)
 script.on_event({e.on_entity_cloned}, on_entity_cloned)
 script.on_event(e.on_lua_shortcut, on_shortcut)
 script.on_event(e.on_force_created, on_force_created)
