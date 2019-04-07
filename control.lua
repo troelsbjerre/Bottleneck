@@ -109,8 +109,9 @@ end
 local function change_sprite(data, style)
     local sprite = data.sprite
     rendering.set_sprite(sprite, style.sprite)
-    rendering.set_visible(sprite, style.visible)
     rendering.set_color(sprite, style.tint)
+    rendering.set_visible(sprite, style.visible)
+    rendering.set_visible(data.light, style.visible)
 end
 
 --[[ Calculates bottom center of the entity to place bottleneck there ]]
@@ -140,6 +141,22 @@ local function new_sprite(entity)
     return rendering.draw_sprite (sprite)
 end
 
+local function new_light(entity)
+    local light = {
+        sprite = 'utility/light_small',
+        target = entity,
+        target_offset=get_render_offset_from(entity),
+        surface=entity.surface,
+        forces={entity.force},
+        players=global.force_config[entity.force.name].players,
+        minimum_darkness=0.3,
+        intensity = 0.5,
+        scale=0.175,
+        visible=SPRITE_STYLE[entity.status].visible
+    }
+    return rendering.draw_light(light)
+end
+
 --[[ A function that is called whenever an entity is built (both by player and by robots) ]]--
 local function built(event)
 	local entity = event.created_entity or event.entity
@@ -151,6 +168,7 @@ local function built(event)
     data.entity = entity
     data.last_status = entity.status
     data.sprite = new_sprite(entity)
+    data.light = new_light(entity)
 
     global.overlays[entity.force.name][entity.unit_number] = data
     -- if we are in the process of removing LIGHTs, we need to restart
@@ -242,6 +260,7 @@ end
                     end
                 else -- Rebuild the icon something broke it!
                     data.sprite = new_sprite(entity)
+                    data.light = new_light(entity)
                 end
             else -- Machine is gone
                 if data.sprite then
@@ -433,7 +452,10 @@ interface.print_global = function () game.write_file("Bottleneck/global.lua", se
 interface.rebuild = rebuild_overlays
 --allow other mods to interact with bottleneck
 interface.get_sprites = function() return SPRITE end
-interface.new_sprite = new_sprite
+interface.new_sprite = function(entity)
+    new_light(entity)
+    new_sprite(entity)
+end
 interface.change_sprite = function(data, style) change_sprite(data, SPRITE_STYLE[style]) end
 --get the signal data associated with an entity
 interface.get_sprite_data = function(force_name, unit_number) return global.overlays[force.name][unit_number] end
