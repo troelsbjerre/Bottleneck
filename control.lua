@@ -323,15 +323,6 @@ local function register_conditional_events()
     end
 end
 
-local function init()
-    init_forces()
-    update_settings()
-    
-    --register the tick handler if we are showing bottlenecks
-        script.on_event(defines.events.on_tick, on_tick)
-    register_conditional_events()
-end
-
 local function init_forces()
     global.force_config = {}
     for _, force in pairs(game.forces) do
@@ -341,7 +332,16 @@ local function init_forces()
     end
     for _, player in pairs(game.players) do
         toggle_player({player_index= player.index},false,true)
+    end
 end
+
+local function init()
+    init_forces()
+    update_settings()
+    
+    --register the tick handler if we are showing bottlenecks
+        script.on_event(defines.events.on_tick, on_tick)
+    register_conditional_events()
 end
 
 local function on_load()
