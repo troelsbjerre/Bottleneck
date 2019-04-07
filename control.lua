@@ -345,6 +345,7 @@ local function init_forces()
 end
 
 local function init()
+    global.overlays = {}
     init_forces()
     update_settings()
 end
