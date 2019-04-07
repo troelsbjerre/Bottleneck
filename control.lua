@@ -84,6 +84,28 @@ local ENTITY_TYPES = {
     ['mining-drill'] = true
 }
 
+-- [ Utilities ]
+
+local function tablefind(tab,el)
+    for index, value in pairs(tab) do
+        if value == el then
+            return index
+        end
+    end
+end
+
+local function table_unique(tab)
+    local res = {}
+    local hash = {}
+    for _, v in ipairs(tab) do
+        if (not hash[v]) then
+            res[#res + 1] = v -- you could print here instead of saving to result table if you wanted
+            hash[v] = true
+        end
+    end
+    return res
+end
+
 local function change_sprite(data, style)
     local sprite = data.sprite
     rendering.set_sprite(sprite, style.sprite)
@@ -420,13 +442,3 @@ interface.get_sprite_data = function(force_name, unit_number) return global.over
 
 remote.add_interface("Bottleneck", interface)
 
--- [ Utilities ]
-
-function tablefind(tab,el)
-    for index, value in pairs(tab) do
-        if value == el then
-            return index
-        end
-    end
-end
-    
