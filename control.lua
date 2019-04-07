@@ -339,6 +339,7 @@ local function register_conditional_events()
 end
 
 local function init_forces()
+    global.forces_render = {}
     global.force_config = {}
     for _, force in pairs(game.forces) do
         global.force_config[force.name] = {}
