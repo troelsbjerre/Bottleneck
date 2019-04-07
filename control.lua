@@ -259,10 +259,11 @@ end
 
 local function update_display(force)
     if global.force_config[force].show_bottlenecks then
-        global.forces_render[#global.forces_render+1]=force
+        global.forces_render[#global.forces_render + 1] = force
     else
-        table.remove(global.forces_render, tablefind(global.forces_render, force) )
+        table.remove(global.forces_render, tablefind(global.forces_render, force))
 end
+    global.forces_render = table_unique(global.forces_render)
 
     if global.overlays[force] then
         if global.force_config[force].show_bottlenecks then
@@ -316,14 +317,14 @@ local function toggle_player(event, remove, add)
     local players = global.force_config[player.force.name]['players']
     if (player.is_shortcut_toggled("toggle-bottleneck") or remove) and not add then
         table.remove(players, tablefind(players, player_index))
-        global.force_config[player.force.name]['show_bottlenecks'] = #players > 0
         player.set_shortcut_toggled("toggle-bottleneck", false)
     else
         players[#players + 1] = player.index
-        global.force_config[player.force.name]['show_bottlenecks'] = true
         player.set_shortcut_toggled("toggle-bottleneck", true)
     end
-    global.force_config[player.force.name]['players'] = table_unique(players)
+    players = table_unique(players)
+    global.force_config[player.force.name]['show_bottlenecks'] = #players > 0
+    global.force_config[player.force.name]['players'] = players
     update_display(player.force.name)
     global.force_config[player.force.name].update_index = nil
 end
