@@ -1,25 +1,3 @@
---Quick to use empty sprite
-local Prototype = {}
---Quick to use empty sprite
-Prototype.empty_sprite ={
-    filename = "__core__/graphics/empty.png",
-    priority = "extra-high",
-    width = 1,
-    height = 1
-}
-
---Quick to use empty animation
-Prototype.empty_animation = {
-    filename = Prototype.empty_sprite.filename,
-    width = Prototype.empty_sprite.width,
-    height = Prototype.empty_sprite.height,
-    line_length = 1,
-    frame_count = 1,
-    shift = { 0, 0},
-    animation_speed = 1,
-    direction_count=1
-}
-
 local SPRITE_DATA = {
     white = {
         filename = "__Bottleneck__/graphics/white.png",
