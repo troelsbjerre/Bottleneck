@@ -2,76 +2,76 @@
 --[[Bottleneck]]--
 -------------------------------------------------------------------------------
 
-local bn_signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
+local bn_signals_per_tick = settings.global['bottleneck-signals-per-tick'].value
 
 local SPRITE = {
     off = {
         sprite = 'bottleneck_white',
-        tint = {r=0, g=0, b=0},
-        visible=false
+        tint = {r = 0, g = 0, b = 0},
+        visible = false
     },
     green = {
         sprite = 'bottleneck_white',
         tint = {g = 1},
-        visible=true
+        visible = true
     },
     red = {
         sprite = 'bottleneck_white',
         tint = {r = 1},
-        visible=true
+        visible = true
     },
     yellow = {
         sprite = 'bottleneck_white',
-        tint = {r = 1, g=1},
-        visible=true
+        tint = {r = 1, g = 1},
+        visible = true
     },
     blue = {
         sprite = 'bottleneck_white',
         tint = {b = 1},
-        visible=true
+        visible = true
     },
-    redx  = {
+    redx = {
         sprite = 'bottleneck_cross',
         tint = {r = 1},
-        visible=true
+        visible = true
     },
     yellowmin = {
         sprite = 'bottleneck_minus',
-        tint = {r = 1, g=1},
-        visible=true
+        tint = {r = 1, g = 1},
+        visible = true
     },
     offsmall = {
         sprite = 'bottleneck_offsmall',
-        visible=true
+        visible = true
     },
     greensmall = {
         sprite = 'bottleneck_white_small',
         tint = {g = 1},
-        visible=true
+        visible = true
     },
     redsmall = {
         sprite = 'bottleneck_white_small',
         tint = {r = 1},
-        visible=true
+        visible = true
     },
     yellowsmall = {
         sprite = 'bottleneck_white_small',
-        tint = {r = 1, g=1},
-        visible=true
+        tint = {r = 1, g = 1},
+        visible = true
     },
     bluesmall = {
         sprite = 'bottleneck_white_small',
-        visible=true
+        visible = true
     },
-    redxsmall  = {
+    redxsmall = {
         sprite = 'bottleneck_cross_small',
         tint = {r = 1},
-        visible=true
+        visible = true
     },
     yellowminsmall = {
         sprite = 'bottleneck_minus_small',
-        tint = {r = 1, g=1},
-        visible=true
+        tint = {r = 1, g = 1},
+        visible = true
     }
 }
 
@@ -86,7 +86,7 @@ local ENTITY_TYPES = {
 
 -- [ Utilities ]
 
-local function tablefind(tab,el)
+local function tablefind(tab, el)
     for index, value in pairs(tab) do
         if value == el then
             return index
@@ -129,14 +129,13 @@ local function get_render_offset_from(entity)
     return {x, y}
 end
 
-
 local function new_sprite(entity)
     local sprite = SPRITE_STYLE[entity.status]
-    sprite['target']=entity
-    sprite['target_offset']=get_render_offset_from(entity)
-    sprite['surface']=entity.surface
-    sprite['render_layer']='object'
-    sprite['forces']={entity.force}
+    sprite['target'] = entity
+    sprite['target_offset'] = get_render_offset_from(entity)
+    sprite['surface'] = entity.surface
+    sprite['render_layer'] = 'object'
+    sprite['forces'] = {entity.force}
     sprite['players'] = global.force_config[entity.force.name].players
     return rendering.draw_sprite(sprite)
 end
@@ -145,14 +144,14 @@ local function new_light(entity)
     local light = {
         sprite = 'utility/light_small',
         target = entity,
-        target_offset=get_render_offset_from(entity),
-        surface=entity.surface,
-        forces={entity.force},
-        players=global.force_config[entity.force.name].players,
-        minimum_darkness=0.3,
+        target_offset = get_render_offset_from(entity),
+        surface = entity.surface,
+        forces = {entity.force},
+        players = global.force_config[entity.force.name].players,
+        minimum_darkness = 0.3,
         intensity = 0.5,
-        scale=0.175,
-        visible=SPRITE_STYLE[entity.status].visible
+        scale = 0.175,
+        visible = SPRITE_STYLE[entity.status].visible
     }
     return rendering.draw_light(light)
 end
@@ -162,7 +161,9 @@ local function built(event)
 	local entity = event.created_entity or event.entity
     local data
 
-    if (not ENTITY_TYPES[entity.type]) or entity.name == "factory-port-marker" then return end
+    if (not ENTITY_TYPES[entity.type]) or entity.name == 'factory-port-marker' then
+        return
+    end
 
     data = {}
     data.entity = entity
@@ -201,25 +202,24 @@ local function rebuild_overlays()
         rendering.clear('Bottleneck')
 
         --[[Find all assembling machines within the bounds, and pretend that they were just built]]--
-        for _, am in pairs(surface.find_entities_filtered{type="assembling-machine"}) do
+        for _, am in pairs(surface.find_entities_filtered {type = 'assembling-machine'}) do
             built({created_entity = am})
         end
 
         --[[Find all furnaces within the bounds, and pretend that they were just built]]--
-        for _, am in pairs(surface.find_entities_filtered{type="furnace"}) do
+        for _, am in pairs(surface.find_entities_filtered {type = 'furnace'}) do
             built({created_entity = am})
         end
 
         --[[Find all mining-drills within the bounds, and pretend that they were just built]]--
-        for _, am in pairs(surface.find_entities_filtered{type="mining-drill"}) do
+        for _, am in pairs(surface.find_entities_filtered {type = 'mining-drill'}) do
             built({created_entity = am})
         end
     end
 end
 
 local function on_tick()
-
-    local signals_per_force = bn_signals_per_tick/#global.forces_render
+    local signals_per_force = bn_signals_per_tick / #global.forces_render
 
     for _, force in pairs(global.forces_render) do
         local overlays = global.overlays[force]
@@ -315,12 +315,12 @@ local function toggle_player(event, remove, add)
     remove = remove or false
     local player = game.players[event.player_index]
     local players = global.force_config[player.force.name]['players']
-    if (player.is_shortcut_toggled("toggle-bottleneck") or remove) and not add then
+    if (player.is_shortcut_toggled('toggle-bottleneck') or remove) and not add then
         table.remove(players, tablefind(players, player_index))
-        player.set_shortcut_toggled("toggle-bottleneck", false)
+        player.set_shortcut_toggled('toggle-bottleneck', false)
     else
         players[#players + 1] = player.index
-        player.set_shortcut_toggled("toggle-bottleneck", true)
+        player.set_shortcut_toggled('toggle-bottleneck', true)
     end
     players = table_unique(players)
     global.force_config[player.force.name]['show_bottlenecks'] = #players > 0
@@ -340,7 +340,7 @@ local function init_forces()
         global.force_config[force.name]['show_bottlenecks'] = false
     end
     for _, player in pairs(game.players) do
-        toggle_player({player_index= player.index},false,true)
+        toggle_player({player_index = player.index}, false, true)
     end
 end
 
@@ -358,9 +358,11 @@ local function on_configuration_changed(event)
     --Any MOD has been changed/added/removed, including base game updates.
     if event.mod_changes then
         --This mod has changed
-        local changes = event.mod_changes["Bottleneck"]
+        local changes = event.mod_changes['Bottleneck']
         if changes then -- THIS Mod has changed
-            game.print("Bottleneck: Updated from ".. tostring(changes.old_version) .. " to " .. tostring(changes.new_version))
+            game.print(
+                'Bottleneck: Updated from ' .. tostring(changes.old_version) .. ' to ' .. tostring(changes.new_version)
+            )
             if not global.force_config then
                 init_forces()
             end
@@ -407,7 +409,7 @@ local function on_player_removed(event)
 	end
 
 local function on_shortcut(event)
-    if event.prototype_name == "toggle-bottleneck" then
+    if event.prototype_name == 'toggle-bottleneck' then
         toggle_player(event)
     end
 end
@@ -417,13 +419,18 @@ script.on_init(init)
 script.on_configuration_changed(on_configuration_changed)
 script.on_load(on_load)
 
-local e=defines.events
+local e = defines.events
 local add_events = {e.on_built_entity, e.on_robot_built_entity, e.script_raised_revive, e.script_raised_built}
 
 script.on_event(add_events, built)
 script.on_event(defines.events.on_tick, on_tick)
-script.on_event("bottleneck-hotkey", toggle_player)
-script.on_event(e.on_player_joined_game, function(event) toggle_player(event,false,true) end)
+script.on_event('bottleneck-hotkey', toggle_player)
+script.on_event(
+    e.on_player_joined_game,
+    function(event)
+        toggle_player(event, false, true)
+    end
+)
 script.on_event({e.on_entity_cloned}, on_entity_cloned)
 script.on_event(e.on_lua_shortcut, on_shortcut)
 script.on_event(e.on_force_created, on_force_created)
@@ -432,20 +439,30 @@ script.on_event(e.on_forces_merged, on_forces_merged)
 --[[ Setup remote interface]]--
 local interface = {}
 --is_enabled - return show_bottlenecks
-interface.enabled = function() return global.show_bottlenecks end
+interface.enabled = function()
+    return global.show_bottlenecks
+end
 --print the global to a file
-interface.print_global = function () game.write_file("Bottleneck/global.lua", serpent.block(global, {nocode=true, comment=false})) end
+interface.print_global = function()
+    game.write_file('Bottleneck/global.lua', serpent.block(global, {nocode = true, comment = false}))
+end
 --rebuild all icons
 interface.rebuild = rebuild_overlays
 --allow other mods to interact with bottleneck
-interface.get_sprites = function() return SPRITE end
+interface.get_sprites = function()
+    return SPRITE
+end
 interface.new_sprite = function(entity)
     new_light(entity)
     new_sprite(entity)
 end
-interface.change_sprite = function(data, style) change_sprite(data, SPRITE_STYLE[style]) end
+interface.change_sprite = function(data, style)
+    change_sprite(data, SPRITE_STYLE[style])
+end
 --get the signal data associated with an entity
-interface.get_sprite_data = function(force_name, unit_number) return global.overlays[force.name][unit_number] end
+interface.get_sprite_data = function(force_name, unit_number)
+    return global.overlays[force.name][unit_number]
+end
 
-remote.add_interface("Bottleneck", interface)
+remote.add_interface('Bottleneck', interface)
 
