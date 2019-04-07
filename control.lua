@@ -180,9 +180,9 @@ local function on_tick()
     local forces = {}
     for _, force in pairs(game.forces) do
         if global.force_config[force.name]['show_bottlenecks'] then
-            table.insert(forces, force.name)
+            forces[#forces+1] = force.name
         elseif not global.force_config[force.name]['bottlenecks_hidden'] then
-            table.insert(forces, force.name)
+            forces[#forces+1] = force.name
 end
     end
 
@@ -275,7 +275,7 @@ local function toggle_player(event, remove)
         global.force_config[player.force.name]['show_bottlenecks'] = #player > 0
         player.set_shortcut_toggled("toggle-bottleneck", false)
     else
-        table.insert(players, player_index)
+        players[#players + 1] = player.index
         global.force_config[player.force.name]['show_bottlenecks'] = true
         global.force_config[player.force.name]['bottlenecks_hidden'] = false
         player.set_shortcut_toggled("toggle-bottleneck", true)
@@ -305,10 +305,11 @@ local function init_forces()
     global.force_config = {}
     for _, force in pairs(game.forces) do
         global.force_config[force.name] = {}
-        global.force_config[force.name]['players'] = {}
+        local players = {}
         for _, player in pairs(force.players) do
-            table.insert(global.force_config[force.name]['players'], player.index)
+            players[#players+1] = player.index
     end
+        global.force_config[force.name]['players'] = players
         global.force_config[force.name]['show_bottlenecks'] = #global.force_config[force.name]['players'] > 0
     end
     for _, player in pairs(game.players) do
@@ -349,10 +350,12 @@ local function on_force_created(event)
     global.force_config[force] = {}
     global.force_config[force]['players'] = {}
     if force.players then
+        local players = {}
     for _, player in pairs(force.players) do
-        table.insert(global.force_config[force]['players'], player.index)
+            players[#players + 1] = player.index
         toggle_player({player_index= player.index})
     end
+        global.force_config[force]['players'] = players
     end
     global.force_config[force]['show_bottlenecks'] = #global.force_config[force]['players'] > 0
 
@@ -363,9 +366,11 @@ local function on_forces_merged(event)
     local force = event.destination.name
     local source = event.source_name
 
+    local players = global.force_config[force]['players']
     for _, player in pairs(global.force_config[source]['players']) do
-        table.insert(global.force_config[force]['players'], player)
+        players[#players + 1] = player.index
     end
+    global.force_config[force]['players'] = players
     global.force_config[force]['show_bottlenecks'] = #global.force_config[force]['players'] > 0
 
     global.force_config[source] = nil
