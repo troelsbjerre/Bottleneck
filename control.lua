@@ -258,22 +258,20 @@ local function on_tick()
         local numiter = 0
         while index and (numiter < signals_per_force) do
             local entity = data.entity
-            if entity.valid then -- if entity is valid, update it, otherwise remove the signal and the associated data
-                if rendering.is_valid(data.sprite) then
-                    local entity = data.entity
+            if rendering.is_valid(data.sprite) and rendering.is_valid(data.light) then
                     if data.last_status ~= entity.status then
                         change_sprite(data, SPRITE_STYLE[entity.status])
                     end
                     data.last_status = entity.status
                 else -- Rebuild the icon something broke it!
+                if entity.valid then
+                    rendering.destroy(data.sprite)
+                    rendering.destroy(data.light)
                     data.sprite = new_sprite(entity)
                     data.light = new_light(entity)
+                else
+                    overlays[index] = nil -- forget about the machine
                 end
-            else -- Machine is gone
-                if data.sprite then
-                    rendering.destroy(data.sprite)
-                end
-                overlays[index] = nil -- forget about the machine
             end
             numiter = numiter + 1
             index, data = next(overlays, index)
