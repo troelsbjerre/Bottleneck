@@ -135,7 +135,7 @@ local function new_sprite(entity)
     sprite['target']=entity
     sprite['target_offset']=get_render_offset_from(entity)
     sprite['surface']=entity.surface
-    sprite['render_layer']='entity-info-icon'
+    sprite['render_layer']='object'
     sprite['forces']={entity.force}
     sprite['players'] = global.force_config[entity.force.name].players
     return rendering.draw_sprite (sprite)
