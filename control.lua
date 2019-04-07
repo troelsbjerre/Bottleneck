@@ -106,6 +106,23 @@ local function table_unique(tab)
     return res
 end
 
+local function update_display(force)
+    if global.overlays[force] then
+        if global.force_config[force].show_bottlenecks then
+            for _, data in pairs(global.overlays[force]) do
+                rendering.set_players(data.sprite, global.force_config[force].players)
+                rendering.set_players(data.light, global.force_config[force].players)
+            end
+        else
+            for _, data in pairs(global.overlays[force]) do
+                rendering.set_visible(data.sprite, false)
+                rendering.set_visible(data.light, false)
+                data.last_status = -1
+            end
+        end
+    end
+end
+
 local function change_sprite(data, style)
     local sprite = data.sprite
     rendering.set_sprite(sprite, style.sprite)
@@ -222,9 +239,7 @@ local function on_tick()
     for _, force in pairs(game.forces) do
         if global.force_config[force.name]['show_bottlenecks'] then
             forces[#forces+1] = force.name
-        elseif not global.force_config[force.name]['bottlenecks_hidden'] then
-            forces[#forces+1] = force.name
-end
+        end
     end
 
     local signals_per_force = bn_signals_per_tick/#forces
@@ -245,19 +260,11 @@ end
             local entity = data.entity
             if entity.valid then -- if entity is valid, update it, otherwise remove the signal and the associated data
                 if rendering.is_valid(data.sprite) then
-                    if global.force_config[force]['show_bottlenecks'] then
-                        local entity = data.entity
-                        if data.last_status ~= entity.status then
-                            change_sprite(data, SPRITE_STYLE[entity.status])
-                        end
-                        data.last_status = entity.status
-                        if global.force_config[force]['update_players'] then
-                            rendering.set_players(data.sprite, global.force_config[data.entity.force.name].players)
-                        end
-                    else
-                        change_sprite(data, SPRITE['off'])
-                        data.last_status = -1
+                    local entity = data.entity
+                    if data.last_status ~= entity.status then
+                        change_sprite(data, SPRITE_STYLE[entity.status])
                     end
+                    data.last_status = entity.status
                 else -- Rebuild the icon something broke it!
                     data.sprite = new_sprite(entity)
                     data.light = new_light(entity)
@@ -274,12 +281,6 @@ end
         global.force_config[force]['update_index'] = index
         -- if we have reached the end of the list (i.e., have removed all LIGHTs),
         -- pause updating until enabled by hotkey next
-        if not index and not global.force_config[force]['update_players'] then
-            global.force_config[force]['update_players'] = false
-        end
-        if not index and not global.force_config[force]['show_bottlenecks'] then
-            global.force_config[force]['bottlenecks_hidden'] = true
-        end
     end
 
 end
@@ -325,12 +326,11 @@ local function toggle_player(event, remove, add)
     else
         players[#players + 1] = player.index
         global.force_config[player.force.name]['show_bottlenecks'] = true
-        global.force_config[player.force.name]['bottlenecks_hidden'] = false
         player.set_shortcut_toggled("toggle-bottleneck", true)
     end
     global.force_config[player.force.name]['players'] = table_unique(players)
-    global.force_config[player.force.name]['update_players'] = true
-    global.force_config[player.force.name]['update_index'] = nil
+    update_display(player.force.name)
+    global.force_config[player.force.name].update_index = nil
 end
 
 -------------------------------------------------------------------------------
