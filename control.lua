@@ -138,7 +138,7 @@ local function new_sprite(entity)
     sprite['render_layer']='object'
     sprite['forces']={entity.force}
     sprite['players'] = global.force_config[entity.force.name].players
-    return rendering.draw_sprite (sprite)
+    return rendering.draw_sprite(sprite)
 end
 
 local function new_light(entity)
@@ -254,7 +254,7 @@ local function on_tick()
             index, data = next(overlays, index)
         end
         global.force_config[force]['update_index'] = index
-end
+    end
 end
 
 local function update_display(force)
@@ -262,7 +262,7 @@ local function update_display(force)
         global.forces_render[#global.forces_render + 1] = force
     else
         table.remove(global.forces_render, tablefind(global.forces_render, force))
-end
+    end
     global.forces_render = table_unique(global.forces_render)
 
     if global.overlays[force] then
@@ -331,13 +331,6 @@ end
 
 -------------------------------------------------------------------------------
 --[[Init Events]]
-local function register_conditional_events()
-    if global.show_bottlenecks ~= 0 then
-        --Register the tick handler if we are showing bottlenecks
-        script.on_event(defines.events.on_tick, on_tick)
-    end
-end
-
 local function init_forces()
     global.forces_render = {}
     global.force_config = {}
@@ -354,15 +347,10 @@ end
 local function init()
     init_forces()
     update_settings()
-    
-    --register the tick handler if we are showing bottlenecks
-        script.on_event(defines.events.on_tick, on_tick)
-    register_conditional_events()
 end
 
 local function on_load()
     load_settings()
-    register_conditional_events()
 end
 
 local function on_configuration_changed(event)
@@ -432,6 +420,7 @@ local e=defines.events
 local add_events = {e.on_built_entity, e.on_robot_built_entity, e.script_raised_revive, e.script_raised_built}
 
 script.on_event(add_events, built)
+script.on_event(defines.events.on_tick, on_tick)
 script.on_event("bottleneck-hotkey", toggle_player)
 script.on_event(e.on_player_joined_game, function(event) toggle_player(event,false,true) end)
 script.on_event({e.on_entity_cloned}, on_entity_cloned)
