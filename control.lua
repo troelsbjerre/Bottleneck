@@ -106,23 +106,6 @@ local function table_unique(tab)
     return res
 end
 
-local function update_display(force)
-    if global.overlays[force] then
-        if global.force_config[force].show_bottlenecks then
-            for _, data in pairs(global.overlays[force]) do
-                rendering.set_players(data.sprite, global.force_config[force].players)
-                rendering.set_players(data.light, global.force_config[force].players)
-            end
-        else
-            for _, data in pairs(global.overlays[force]) do
-                rendering.set_visible(data.sprite, false)
-                rendering.set_visible(data.light, false)
-                data.last_status = -1
-            end
-        end
-    end
-end
-
 local function change_sprite(data, style)
     local sprite = data.sprite
     rendering.set_sprite(sprite, style.sprite)
@@ -235,16 +218,10 @@ local function rebuild_overlays()
 end
 
 local function on_tick()
-    local forces = {}
-    for _, force in pairs(game.forces) do
-        if global.force_config[force.name]['show_bottlenecks'] then
-            forces[#forces+1] = force.name
-        end
-    end
 
-    local signals_per_force = bn_signals_per_tick/#forces
+    local signals_per_force = bn_signals_per_tick/#global.forces_render
 
-    for _, force in pairs(forces) do
+    for _, force in pairs(global.forces_render) do
         local overlays = global.overlays[force]
         local index = global.force_config[force]['update_index']
 
@@ -261,8 +238,8 @@ local function on_tick()
             if rendering.is_valid(data.sprite) and rendering.is_valid(data.light) then
                     if data.last_status ~= entity.status then
                         change_sprite(data, SPRITE_STYLE[entity.status])
-                    end
                     data.last_status = entity.status
+                end
                 else -- Rebuild the icon something broke it!
                 if entity.valid then
                     rendering.destroy(data.sprite)
@@ -277,10 +254,30 @@ local function on_tick()
             index, data = next(overlays, index)
         end
         global.force_config[force]['update_index'] = index
-        -- if we have reached the end of the list (i.e., have removed all LIGHTs),
-        -- pause updating until enabled by hotkey next
-    end
+end
+end
 
+local function update_display(force)
+    if global.force_config[force].show_bottlenecks then
+        global.forces_render[#global.forces_render+1]=force
+    else
+        table.remove(global.forces_render, tablefind(global.forces_render, force) )
+end
+
+    if global.overlays[force] then
+        if global.force_config[force].show_bottlenecks then
+            for _, data in pairs(global.overlays[force]) do
+                rendering.set_players(data.sprite, global.force_config[force].players)
+                rendering.set_players(data.light, global.force_config[force].players)
+            end
+        else
+            for _, data in pairs(global.overlays[force]) do
+                rendering.set_visible(data.sprite, false)
+                rendering.set_visible(data.light, false)
+                data.last_status = -1
+            end
+        end
+    end
 end
 
 local function load_settings()
