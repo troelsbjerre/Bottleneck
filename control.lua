@@ -51,10 +51,10 @@ local STATES = {
 }
 
 local STYLE = {
-	LIGHT.off,
-	LIGHT[settings.global["bottleneck-show-running-as"].value],
-	LIGHT[settings.global["bottleneck-show-stopped-as"].value],
-	LIGHT[settings.global["bottleneck-show-full-as"].value],
+    LIGHT.off,
+    LIGHT[settings.global["bottleneck-show-running-as"].value],
+    LIGHT[settings.global["bottleneck-show-stopped-as"].value],
+    LIGHT[settings.global["bottleneck-show-full-as"].value],
 }
 
 --Faster to just change the color than it is to check it first.
@@ -119,17 +119,17 @@ function update.drill(data)
         if (entity.energy == 0) or (entity.mining_target == nil and check_drill_depleted(data)) then
             change_signal(data, STATES.STOPPED)
         elseif (entity.mining_progress == progress) then
-			local fluidbox = entity.fluidbox
-			if #fluidbox > 0 then
-				local fluid = fluidbox[1]
-				if fluid and fluid.amount > 0 then
-					change_signal(data, STATES.FULL)
-				else
-					change_signal(data, STATES.STOPPED)
-				end
-			else
-				change_signal(data, STATES.FULL)
-			end
+            local fluidbox = entity.fluidbox
+            if #fluidbox > 0 then
+                local fluid = fluidbox[1]
+                if fluid and fluid.amount > 0 then
+                    change_signal(data, STATES.FULL)
+                else
+                    change_signal(data, STATES.STOPPED)
+                end
+            else
+                change_signal(data, STATES.FULL)
+            end
         else
             change_signal(data, STATES.RUNNING)
             data.progress = entity.mining_progress
@@ -165,7 +165,7 @@ end
 
 --[[ A function that is called whenever an entity is built (both by player and by robots) ]]--
 local function built(event)
-	local entity = event.created_entity or event.entity
+    local entity = event.created_entity or event.entity
     local data
     -- If the entity that's been built is an assembly machine or a furnace...
     if entity.type == "assembling-machine" then
@@ -280,15 +280,15 @@ local function update_settings(event)
     if event.setting == "bottleneck-signals_per_tick" then
         bn_signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
     end
-	if event.setting == "bottleneck-show-running-as" then
-		STYLE[STATES.RUNNING] = LIGHT[settings.global["bottleneck-show-running-as"].value]
-	end
-	if event.setting == "bottleneck-show-stopped-as" then
-		STYLE[STATES.STOPPED] = LIGHT[settings.global["bottleneck-show-stopped-as"].value]
-	end
-	if event.setting == "bottleneck-show-full-as" then
-		STYLE[STATES.FULL] = LIGHT[settings.global["bottleneck-show-full-as"].value]
-	end
+    if event.setting == "bottleneck-show-running-as" then
+        STYLE[STATES.RUNNING] = LIGHT[settings.global["bottleneck-show-running-as"].value]
+    end
+    if event.setting == "bottleneck-show-stopped-as" then
+        STYLE[STATES.STOPPED] = LIGHT[settings.global["bottleneck-show-stopped-as"].value]
+    end
+    if event.setting == "bottleneck-show-full-as" then
+        STYLE[STATES.FULL] = LIGHT[settings.global["bottleneck-show-full-as"].value]
+    end
 end
 script.on_event(defines.events.on_runtime_mod_setting_changed, update_settings)
 
@@ -340,28 +340,28 @@ local function on_configuration_changed(event)
 end
 
 local function on_entity_cloned(event)
-	if event.destination.name == "bottleneck-stoplight" then
-		event.destination.destroy()
-	end
+    if event.destination.name == "bottleneck-stoplight" then
+        event.destination.destroy()
+    end
 end
 
 --[[ Hotkey ]]--
 
 local function on_hotkey(event)
-	local player = game.players[event.player_index]
-	if not player.admin then
-		player.print('Bottleneck: You do not have privileges to toggle bottleneck')
-		return
-	end
-	global.update_index = nil
-	if global.show_bottlenecks == 1 then
-		global.show_bottlenecks = -1
-	else
-		global.show_bottlenecks = 1
-	end
-	--Toggling the setting doesn't disable right way, make sure the handler gets
-	--reenabled to toggle colors to their correct values.
-	script.on_event(defines.events.on_tick, on_tick)
+    local player = game.players[event.player_index]
+    if not player.admin then
+        player.print('Bottleneck: You do not have privileges to toggle bottleneck')
+        return
+    end
+    global.update_index = nil
+    if global.show_bottlenecks == 1 then
+        global.show_bottlenecks = -1
+    else
+        global.show_bottlenecks = 1
+    end
+    --Toggling the setting doesn't disable right way, make sure the handler gets
+    --reenabled to toggle colors to their correct values.
+    script.on_event(defines.events.on_tick, on_tick)
 end
 
 --[[ Setup event handlers ]]--
