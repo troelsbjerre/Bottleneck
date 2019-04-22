@@ -176,7 +176,7 @@ local function built(event)
         data = { update = "drill" }
     end
 
-    if data then
+    if data and not global.overlays[entity.unit_number] then
         data.entity = entity
         data.signal = new_signal(entity)
         data.status = STATES.STOPPED
