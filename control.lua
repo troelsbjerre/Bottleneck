@@ -75,6 +75,7 @@ local function remove_signal(event)
             signal.destroy()
         end
         overlays[index] = nil
+        global.update_index = nil
     end
 end
 
