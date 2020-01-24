@@ -1,2 +1,7 @@
 # Bottleneck
-Factorio mod that tell you which assemblers are starved of ingredients
+
+Factorio mod that tell you which machines are starved of ingredients
+
+## Attributions
+
+Icons based of off [Feather](https://github.com/feathericons/feather)
