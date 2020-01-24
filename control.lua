@@ -5,31 +5,28 @@
 local bn_signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
 
 local LIGHT = { off = 1 }
-local colors = { white = 0, blue = 1, red = 2, green = 3, yellow = 4 }
+local colors = { "white", "blue", "red", "green", "yellow" }
 local icons = {
-  none = 0,
-  ["none small"] = 1,
-  alert = 2,
-  ["alert small"] = 3,
-  cross = 4,
-  ["cross small"] = 5,
-  minus = 6,
-  ["minus small"] = 7,
-  pause = 8,
-  ["pause small"] = 9,
-  stop = 10,
-  ["stop small"] = 11,
+  "none",
+  "none small",
+  "alert",
+  "alert small",
+  "cross",
+  "cross small",
+  "minus",
+  "minus small",
+  "pause",
+  "pause small",
+  "stop",
+  "stop small",
 }
 
-local icon_count = 0
-for _ in pairs(icons) do
-  icon_count = icon_count + 1
-end
+local icon_count = table_size(icons)
 
-for color, color_value in pairs(colors) do
-  for icon, icon_value in pairs(icons) do
-    --log("LIGHT[" .. color .. " " .. icon .. "] = " .. ( color_value * icon_count ) + icon_value + 2)
-    LIGHT[color .. " " .. icon] = ( color_value * icon_count ) + icon_value + 2
+for color_index, color in pairs(colors) do
+  for icon_index, icon  in pairs(icons) do
+    --log("LIGHT[" .. color .. " " .. icon .. "] = " .. ( (color_index - 1) * icon_count ) + icon_index + 2)
+    LIGHT[color .. " " .. icon] = ( (color_index - 1) * icon_count ) + icon_index + 1
   end
 end
 
