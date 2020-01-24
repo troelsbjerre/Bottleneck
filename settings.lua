@@ -136,8 +136,8 @@ for status_name, _ in pairs(defines.entity_status) do
     allowed_values = icons,
     order = string.format("bottleneck-%02d", order)
   }
-  table.insert(settings, color_setting)
-  table.insert(settings, icon_setting)
+  settings[#settings+1] = color_setting
+  settings[#settings+1] = icon_setting
   order = order + 1
 end
 

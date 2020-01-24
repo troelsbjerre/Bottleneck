@@ -45,6 +45,11 @@ local function inTable(tbl, item)
   return false
 end
 
+--Faster to just change the color than it is to check it first.
+local function change_signal(data, status)
+  data.signal.graphics_variation = STYLE[status] or 1
+end
+
 --[[ Remove the LIGHT]]
 local function remove_signal(event)
     local entity = event.entity
@@ -87,7 +92,6 @@ local function entity_moved(event, data)
     data = data or global.overlays[event.moved_entity.unit_number]
     if data then
         if data.signal and data.signal.valid then
-            data.drill_depleted = false
             local position = get_signal_position_from(event.moved_entity)
             data.signal.teleport(position)
         end
@@ -135,6 +139,7 @@ local function rebuild_overlays()
             stoplight.destroy()
         end
 
+        --[[rebuild signals for all supported entity types]]
         for _, type in pairs(SUPPORTED_TYPES) do
           for _, entity in pairs(surface.find_entities_filtered{type=type}) do
             built({created_entity = entity})

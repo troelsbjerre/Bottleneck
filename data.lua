@@ -89,8 +89,8 @@ for _, color_value in pairs(colors) do
     }
     picture_small.filename = icon_value
     picture_small.tint = color_value
-    table.insert(stoplight.pictures, picture)
-    table.insert(stoplight.pictures, picture_small)
+    stoplight.pictures[#stoplight.pictures+1] = picture
+    stoplight.pictures[#stoplight.pictures+1] = picture_small
   end
 end
 local key = {
