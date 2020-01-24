@@ -1,171 +1,144 @@
-data:extend{
-    {
-        type = "int-setting",
-        name = "bottleneck-signals-per-tick",
-        setting_type = "runtime-global",
-        default_value = 40,
-        maximum_value = 2000,
-        minimum_value = 1,
-        order = "bottleneck-aa",
-    },
-	{
-		type = "string-setting",
-		name = "bottleneck-show-working",
-		setting_type = "runtime-global",
-		default_value = "green",
-		allowed_values = { "off", "green", "red", "yellow", "blue", "redx", "yellowmin", "offsmall", "greensmall", "redsmall", "yellowsmall", "bluesmall", "redxsmall", "yellowminsmall" },
-		order = "bottleneck-ab",
-	},
-	{
-		type = "string-setting",
-		name = "bottleneck-show-no_power",
-		setting_type = "runtime-global",
-		default_value = "redx",
-		allowed_values = { "off", "green", "red", "yellow", "blue", "redx", "yellowmin", "offsmall", "greensmall", "redsmall", "yellowsmall", "bluesmall", "redxsmall", "yellowminsmall" },
-		order = "bottleneck-ac",
-	},
-	{
-		type = "string-setting",
-		name = "bottleneck-show-no_fuel",
-		setting_type = "runtime-global",
-		default_value = "redx",
-		allowed_values = { "off", "green", "red", "yellow", "blue", "redx", "yellowmin", "offsmall", "greensmall", "redsmall", "yellowsmall", "bluesmall", "redxsmall", "yellowminsmall" },
-		order = "bottleneck-ad",
-	},
-	{
-		type = "string-setting",
-		name = "bottleneck-show-no_recipe",
-		setting_type = "runtime-global",
-		default_value = "off",
-		allowed_values = { "off", "green", "red", "yellow", "blue", "redx", "yellowmin", "offsmall", "greensmall", "redsmall", "yellowsmall", "bluesmall", "redxsmall", "yellowminsmall" },
-		order = "bottleneck-ae",
-	},
-	{
-		type = "string-setting",
-		name = "bottleneck-show-no_input_fluid",
-		setting_type = "runtime-global",
-		default_value = "red",
-		allowed_values = { "off", "green", "red", "yellow", "blue", "redx", "yellowmin", "offsmall", "greensmall", "redsmall", "yellowsmall", "bluesmall", "redxsmall", "yellowminsmall" },
-		order = "bottleneck-af",
-	},
-	{
-		type = "string-setting",
-		name = "bottleneck-show-no_research_in_progress",
-		setting_type = "runtime-global",
-		default_value = "off",
-		allowed_values = { "off", "green", "red", "yellow", "blue", "redx", "yellowmin", "offsmall", "greensmall", "redsmall", "yellowsmall", "bluesmall", "redxsmall", "yellowminsmall" },
-		order = "bottleneck-ag",
-	},
-	{
-		type = "string-setting",
-		name = "bottleneck-show-no_minable_resources",
-		setting_type = "runtime-global",
-		default_value = "red",
-		allowed_values = { "off", "green", "red", "yellow", "blue", "redx", "yellowmin", "offsmall", "greensmall", "redsmall", "yellowsmall", "bluesmall", "redxsmall", "yellowminsmall" },
-		order = "bottleneck-ah",
-	},
-	{
-		type = "string-setting",
-		name = "bottleneck-show-low_input_fluid",
-		setting_type = "runtime-global",
-		default_value = "red",
-		allowed_values = { "off", "green", "red", "yellow", "blue", "redx", "yellowmin", "offsmall", "greensmall", "redsmall", "yellowsmall", "bluesmall", "redxsmall", "yellowminsmall" },
-		order = "bottleneck-ai",
-	},
-	{
-		type = "string-setting",
-		name = "bottleneck-show-low_power",
-		setting_type = "runtime-global",
-		default_value = "redx",
-		allowed_values = { "off", "green", "red", "yellow", "blue", "redx", "yellowmin", "offsmall", "greensmall", "redsmall", "yellowsmall", "bluesmall", "redxsmall", "yellowminsmall" },
-		order = "bottleneck-aj",
-	},
-	{
-		type = "string-setting",
-		name = "bottleneck-show-disabled_by_control_behavior",
-		setting_type = "runtime-global",
-		default_value = "off",
-		allowed_values = { "off", "green", "red", "yellow", "blue", "redx", "yellowmin", "offsmall", "greensmall", "redsmall", "yellowsmall", "bluesmall", "redxsmall", "yellowminsmall" },
-		order = "bottleneck-ak",
-	},
-	{
-		type = "string-setting",
-		name = "bottleneck-show-disabled_by_script",
-		setting_type = "runtime-global",
-		default_value = "off",
-		allowed_values = { "off", "green", "red", "yellow", "blue", "redx", "yellowmin", "offsmall", "greensmall", "redsmall", "yellowsmall", "bluesmall", "redxsmall", "yellowminsmall" },
-		order = "bottleneck-al",
-	},
-	{
-		type = "string-setting",
-		name = "bottleneck-show-fluid_ingredient_shortage",
-		setting_type = "runtime-global",
-		default_value = "red",
-		allowed_values = { "off", "green", "red", "yellow", "blue", "redx", "yellowmin", "offsmall", "greensmall", "redsmall", "yellowsmall", "bluesmall", "redxsmall", "yellowminsmall" },
-		order = "bottleneck-am",
-	},
-	{
-		type = "string-setting",
-		name = "bottleneck-show-fluid_production_overload",
-		setting_type = "runtime-global",
-		default_value = "yellow",
-		allowed_values = { "off", "green", "red", "yellow", "blue", "redx", "yellowmin", "offsmall", "greensmall", "redsmall", "yellowsmall", "bluesmall", "redxsmall", "yellowminsmall" },
-		order = "bottleneck-an",
-	},
-	{
-		type = "string-setting",
-		name = "bottleneck-show-item_ingredient_shortage",
-		setting_type = "runtime-global",
-		default_value = "red",
-		allowed_values = { "off", "green", "red", "yellow", "blue", "redx", "yellowmin", "offsmall", "greensmall", "redsmall", "yellowsmall", "bluesmall", "redxsmall", "yellowminsmall" },
-		order = "bottleneck-ao",
-	},
-	{
-		type = "string-setting",
-		name = "bottleneck-show-item_production_overload",
-		setting_type = "runtime-global",
-		default_value = "yellow",
-		allowed_values = { "off", "green", "red", "yellow", "blue", "redx", "yellowmin", "offsmall", "greensmall", "redsmall", "yellowsmall", "bluesmall", "redxsmall", "yellowminsmall" },
-		order = "bottleneck-ap",
-	},
-	{
-		type = "string-setting",
-		name = "bottleneck-show-marked_for_deconstruction",
-		setting_type = "runtime-global",
-		default_value = "off",
-		allowed_values = { "off", "green", "red", "yellow", "blue", "redx", "yellowmin", "offsmall", "greensmall", "redsmall", "yellowsmall", "bluesmall", "redxsmall", "yellowminsmall" },
-		order = "bottleneck-aq",
-	},
-	{
-		type = "string-setting",
-		name = "bottleneck-show-missing_required_fluid",
-		setting_type = "runtime-global",
-		default_value = "red",
-		allowed_values = { "off", "green", "red", "yellow", "blue", "redx", "yellowmin", "offsmall", "greensmall", "redsmall", "yellowsmall", "bluesmall", "redxsmall", "yellowminsmall" },
-		order = "bottleneck-ar",
-	},
-	{
-		type = "string-setting",
-		name = "bottleneck-show-missing_science_packs",
-		setting_type = "runtime-global",
-		default_value = "red",
-		allowed_values = { "off", "green", "red", "yellow", "blue", "redx", "yellowmin", "offsmall", "greensmall", "redsmall", "yellowsmall", "bluesmall", "redxsmall", "yellowminsmall" },
-		order = "bottleneck-as",
-	},
-	{
-		type = "string-setting",
-		name = "bottleneck-show-waiting_for_source_items",
-		setting_type = "runtime-global",
-		default_value = "red",
-		allowed_values = { "off", "green", "red", "yellow", "blue", "redx", "yellowmin", "offsmall", "greensmall", "redsmall", "yellowsmall", "bluesmall", "redxsmall", "yellowminsmall" },
-		order = "bottleneck-at",
-	},
-	{
-		type = "string-setting",
-		name = "bottleneck-show-waiting_for_space_in_destination",
-		setting_type = "runtime-global",
-		default_value = "yellow",
-		allowed_values = { "off", "green", "red", "yellow", "blue", "redx","yellowmin","offsmall","greensmall","redsmall","yellowsmall","bluesmall","redxsmall","yellowminsmall"}, 
-		order = "bottleneck-au",
-	},
+local icons = {
+  "none",
+  "none small",
+  "alert",
+  "alert small",
+  "cross",
+  "cross small",
+  "minus",
+  "minus small",
+  "pause",
+  "pause small",
+  "stop",
+  "stop small"
 }
+
+local colors = {
+  "off",
+  "white",
+  "blue",
+  "red",
+  "green",
+  "yellow"
+}
+
+local settings_values = {
+  ["working"] = {
+    color = "green",
+    icon = "none"
+  },
+  ["no_power"] = {
+    color = "red",
+    icon = "alert"
+  },
+  ["no_fuel"] = {
+    color = "red",
+    icon = "alert"
+  },
+  ["no_input_fluid"] = {
+    color = "red",
+    icon = "alert"
+  },
+  ["no_research_in_progress"] = {
+    color = "white",
+    icon = "pause small"
+  },
+  ["no_minable_resources"] = {
+    color = "red",
+    icon = "stop"
+  },
+  ["low_input_fluid"] = {
+    color = "yellow",
+    icon = "alert"
+  },
+  ["low_power"] = {
+    color = "yellow",
+    icon = "alert"
+  },
+  ["disabled_by_control_behavior"] = {
+    color = "white",
+    icon = "stop small"
+  },
+  ["disabled_by_script"] = {
+    color = "white",
+    icon = "stop small"
+  },
+  ["fluid_ingredient_shortage"] = {
+    color = "red",
+    icon = "alert"
+  },
+  ["fluid_production_overload"] = {
+    color = "yellow",
+    icon = "pause"
+  },
+  ["item_ingredient_shortage"] = {
+    color = "red",
+    icon = "alert"
+  },
+  ["item_production_overload"] = {
+    color = "yellow",
+    icon = "pause"
+  },
+  ["missing_required_fluid"] = {
+    color = "red",
+    icon = "alert"
+  },
+  ["missing_science_packs"] = {
+    color = "red",
+    icon = "alert"
+  },
+  ["waiting_for_source_items"] = {
+    color = "red",
+    icon = "alert"
+  },
+  ["waiting_for_space_in_destination"] = {
+    color = "yellow",
+    icon = "pause"
+  },
+}
+
+local settings = {
+  {
+    type = "int-setting",
+    name = "bottleneck-signals-per-tick",
+    setting_type = "runtime-global",
+    default_value = 40,
+    maximum_value = 2000,
+    minimum_value = 1,
+    order = "bottleneck-01",
+  }
+}
+
+local order = 2
+for status_name, _ in pairs(defines.entity_status) do
+  local defaults = settings_values[status_name]
+  if defaults == nil then
+    defaults = {
+      color = "off",
+      icon = "none"
+    }
+  end
+  log(status_name .. " - " .. defaults.color .. " " .. defaults.icon)
+  local color_setting = {
+    type = "string-setting",
+    name = "bottleneck-show-" .. status_name .. "-color",
+    setting_type = "runtime-global",
+    default_value = defaults.color,
+    allowed_values = colors,
+    order = string.format("bottleneck-%02d", order)
+  }
+  order = order + 1
+  local icon_setting = {
+    type = "string-setting",
+    name = "bottleneck-show-" .. status_name .. "-icon",
+    setting_type = "runtime-global",
+    default_value = defaults.icon,
+    allowed_values = icons,
+    order = string.format("bottleneck-%02d", order)
+  }
+  table.insert(settings, color_setting)
+  table.insert(settings, icon_setting)
+  order = order + 1
+end
+
+data:extend(settings)

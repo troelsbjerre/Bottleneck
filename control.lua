@@ -4,18 +4,41 @@
 
 local bn_signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
 
-local LIGHT = {
-    off = 1, green = 2, red = 3, yellow = 4, blue = 5, redx = 6, yellowmin = 7,
-    offsmall = 8,  greensmall = 9, redsmall = 10, yellowsmall = 11,
-    bluesmall = 12, redxsmall = 13, yellowminsmall = 14,
+local LIGHT = { off = 1 }
+local colors = { white = 0, blue = 1, red = 2, green = 3, yellow = 4 }
+local icons = {
+  none = 0,
+  ["none small"] = 1,
+  alert = 2,
+  ["alert small"] = 3,
+  cross = 4,
+  ["cross small"] = 5,
+  minus = 6,
+  ["minus small"] = 7,
+  pause = 8,
+  ["pause small"] = 9,
+  stop = 10,
+  ["stop small"] = 11,
 }
+
+local icon_count = 0
+for _ in pairs(icons) do
+  icon_count = icon_count + 1
+end
+
+for color, color_value in pairs(colors) do
+  for icon, icon_value in pairs(icons) do
+    --log("LIGHT[" .. color .. " " .. icon .. "] = " .. ( color_value * icon_count ) + icon_value + 2)
+    LIGHT[color .. " " .. icon] = ( color_value * icon_count ) + icon_value + 2
+  end
+end
 
 local STYLE = {}
 
-local SUPPORTED_TYPES = { "assembling-machine", "lab", "furnace", "mining-drill" }
+local SUPPORTED_TYPES = { "assembling-machine", "lab", "furnace", "mining-drill", "rocket-silo"}
 
 --[[ Support for searching in tables ]]
-function inTable(tbl, item)
+local function inTable(tbl, item)
   for key, value in pairs(tbl) do
       if value == item then return true end
   end
@@ -50,12 +73,12 @@ local function get_signal_position_from(entity)
     local x = (width > 1.25 and center - 0.5) or center
     local y = right_bottom.y
     --Calculating bottom center of the selection box
-    return {x = entity.position.x + x, y = entity.position.y + y}
+    return {x = entity.position.x + x, y = entity.position.y + y - 0.23}
 end
 
 local function new_signal(entity, variation)
     local signal = entity.surface.create_entity{name = "bottleneck-stoplight", position = get_signal_position_from(entity), force = entity.force}
-    signal.graphics_variation = (global.show_bottlenecks < 1 and LIGHT["off"]) or variation or LIGHT["red"]
+    signal.graphics_variation = (global.show_bottlenecks < 1 and LIGHT["off"]) or variation or STYLE[entity.status]
     signal.destructible = false
     return signal
 end
@@ -112,19 +135,10 @@ local function rebuild_overlays()
             stoplight.destroy()
         end
 
-        --[[Find all assembling machines within the bounds, and pretend that they were just built]]--
-        for _, am in pairs(surface.find_entities_filtered{type="assembling-machine"}) do
-            built({created_entity = am})
-        end
-
-        --[[Find all furnaces within the bounds, and pretend that they were just built]]--
-        for _, am in pairs(surface.find_entities_filtered{type="furnace"}) do
-            built({created_entity = am})
-        end
-
-        --[[Find all mining-drills within the bounds, and pretend that they were just built]]--
-        for _, am in pairs(surface.find_entities_filtered{type="mining-drill"}) do
-            built({created_entity = am})
+        for _, type in pairs(SUPPORTED_TYPES) do
+          for _, entity in pairs(surface.find_entities_filtered{type=type}) do
+            built({created_entity = entity})
+          end
         end
     end
 end
@@ -156,7 +170,7 @@ local function on_tick()
                         --Faster to just change the color than it is to check it first.
                         data.signal.graphics_variation = STYLE[data.entity.status] or 1
                     else
-                        change_signal(data, STATES.OFF)
+                        data.signal.graphics_variation = LIGHT["off"]
                     end
                 else -- Rebuild the icon something broke it!
                     data.signal = new_signal(entity)
@@ -181,28 +195,19 @@ local function on_tick()
     end
 end
 
-local function update_settings(event)
-	bn_signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
-	STYLE[defines.entity_status.working] = LIGHT[settings.global["bottleneck-show-working"].value]
-	STYLE[defines.entity_status.no_power] = LIGHT[settings.global["bottleneck-show-no_power"].value]
-	STYLE[defines.entity_status.no_fuel] = LIGHT[settings.global["bottleneck-show-no_fuel"].value]
-	STYLE[defines.entity_status.no_recipe] = LIGHT[settings.global["bottleneck-show-no_recipe"].value]
-	STYLE[defines.entity_status.no_input_fluid] = LIGHT[settings.global["bottleneck-show-no_input_fluid"].value]
-	STYLE[defines.entity_status.no_research_in_progress] = LIGHT[settings.global["bottleneck-show-no_research_in_progress"].value]
-	STYLE[defines.entity_status.no_minable_resources] = LIGHT[settings.global["bottleneck-show-no_minable_resources"].value]
-	STYLE[defines.entity_status.low_input_fluid] = LIGHT[settings.global["bottleneck-show-low_input_fluid"].value]
-	STYLE[defines.entity_status.low_power] = LIGHT[settings.global["bottleneck-show-low_power"].value]
-	STYLE[defines.entity_status.disabled_by_control_behavior] = LIGHT[settings.global["bottleneck-show-disabled_by_control_behavior"].value]
-	STYLE[defines.entity_status.disabled_by_script] = LIGHT[settings.global["bottleneck-show-disabled_by_script"].value]
-	STYLE[defines.entity_status.fluid_ingredient_shortage] = LIGHT[settings.global["bottleneck-show-fluid_ingredient_shortage"].value]
-	STYLE[defines.entity_status.fluid_production_overload] = LIGHT[settings.global["bottleneck-show-fluid_production_overload"].value]
-	STYLE[defines.entity_status.item_ingredient_shortage] = LIGHT[settings.global["bottleneck-show-item_ingredient_shortage"].value]
-	STYLE[defines.entity_status.item_production_overload] = LIGHT[settings.global["bottleneck-show-item_production_overload"].value]
-	STYLE[defines.entity_status.marked_for_deconstruction] = LIGHT[settings.global["bottleneck-show-marked_for_deconstruction"].value]
-	STYLE[defines.entity_status.missing_required_fluid] = LIGHT[settings.global["bottleneck-show-missing_required_fluid"].value]
-	STYLE[defines.entity_status.missing_science_packs] = LIGHT[settings.global["bottleneck-show-missing_science_packs"].value]
-	STYLE[defines.entity_status.waiting_for_source_items] = LIGHT[settings.global["bottleneck-show-waiting_for_source_items"].value]
-	STYLE[defines.entity_status.waiting_for_space_in_destination] = LIGHT[settings.global["bottleneck-show-waiting_for_space_in_destination"].value]
+local function update_settings(_)
+  bn_signals_per_tick = settings.global["bottleneck-signals-per-tick"].value
+  for status_name, status in pairs(defines.entity_status) do
+    local color = settings.global["bottleneck-show-"..status_name.."-color"].value
+    if color == "off" then
+      --log("Setting:" .. status_name .. " - " .. "off" .. "(" ..LIGHT["off"] ..")")
+      STYLE[status] = LIGHT["off"]
+    else
+      local icon = settings.global["bottleneck-show-"..status_name.."-icon"].value
+      --log("Setting:" .. status_name .. " - " .. color .. " " .. icon .. "(" ..LIGHT[color .. " " .. icon] ..")")
+      STYLE[status] = LIGHT[color .. " " .. icon]
+    end
+  end
 end
 script.on_event(defines.events.on_runtime_mod_setting_changed, update_settings)
 
@@ -305,7 +310,6 @@ interface.rebuild = rebuild_overlays
 --allow other mods to interact with bottleneck
 interface.entity_moved = entity_moved
 interface.get_lights = function() return LIGHT end
-interface.get_states = function() return STATES end
 interface.new_signal = new_signal
 interface.change_signal = change_signal --function(data, color) change_signal(signal, color) end
 --get a place position for a signal
