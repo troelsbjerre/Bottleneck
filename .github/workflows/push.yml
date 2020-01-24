@@ -1,0 +1,11 @@
+on: push
+name: Check
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: lint
+        uses: Roang-zero1/factorio-mod-luacheck@master
+        env:
+          LUACHECKRC_URL: https://raw.githubusercontent.com/Nexela/Factorio-luacheckrc/0.17/.luacheckrc
