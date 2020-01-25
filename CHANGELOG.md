@@ -1,10 +1,18 @@
 # Changelog
 
+## 0.11.2 (2020-01-26)
+
+### Bugfixes
+
+- Fix missing STYLE array on incomplete init by [Roang-zero1](https://github.com/Roang-zero1)
+
+---
+
 ## 0.11.1 (2020-01-24)
 
 ### Bugfixes
 
-- Fix crash on initial machine build
+- Fix crash on initial machine build by [Roang-zero1](https://github.com/Roang-zero1)
 
 ---
 
@@ -12,14 +20,14 @@
 
 ### Features
 
-- Use 0.17 API to request entity status
-- Show rocket silo status
-- New Icon options
-- More customization options
+- Use 0.17 API to request entity status by [Roang-zero1](https://github.com/Roang-zero1)
+- Show rocket silo status by [Roang-zero1](https://github.com/Roang-zero1)
+- New Icon options by [Roang-zero1](https://github.com/Roang-zero1)
+- More customization options by [Roang-zero1](https://github.com/Roang-zero1)
 
 ### Bugfixes
 
-- Fix status lamps for laboratories
+- Fix status lamps for laboratories by [Roang-zero1](https://github.com/Roang-zero1)
 
 ---
 
