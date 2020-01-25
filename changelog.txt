@@ -305,4 +305,4 @@ Version: 0.0.1
 Date: 2016-06-11
 
   Changes:
-    -  Proof of concept.
+    - Proof of concept.

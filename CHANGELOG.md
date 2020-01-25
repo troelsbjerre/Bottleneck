@@ -364,4 +364,4 @@
 
 ## 0.0.1 (2016-06-11)
 
--  Proof of concept.
+- Proof of concept.
