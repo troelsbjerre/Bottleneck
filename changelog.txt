@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.11.1
+Date: 2020-01-24
+
+  Bugfixes:
+    - Fix crash on initial machine build
+---------------------------------------------------------------------------------------------------
 Version: 0.11.0
 Date: 2020-01-24
 
@@ -48,7 +54,7 @@ Version: 0.9.0
 Date: 2017-12-15
 
   Bugfixes:
-    - 0.16 compatibility fix by ochristi)
+    - 0.16 compatibility fix by ochristi
 
   Other:
     - Changed logic for state tracking, to avoid light flickering (some machines would show as yellow for a tick per cycle, even when working 100%)
