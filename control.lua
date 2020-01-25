@@ -80,7 +80,7 @@ end
 
 local function new_signal(entity, variation)
     local signal = entity.surface.create_entity{name = "bottleneck-stoplight", position = get_signal_position_from(entity), force = entity.force}
-    signal.graphics_variation = (global.show_bottlenecks < 1 and LIGHT["off"]) or variation or STYLE[entity.status]
+    signal.graphics_variation = (global.show_bottlenecks < 1 and LIGHT["off"]) or variation or STYLE[entity.status] or LIGHT["off"]
     signal.destructible = false
     return signal
 end

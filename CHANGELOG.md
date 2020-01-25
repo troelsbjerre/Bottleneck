@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.11.1 (2020-01-24)
+
+### Bugfixes
+
+- Fix crash on initial machine build
+
+---
+
 ## 0.11.0 (2020-01-24)
 
 ### Features
@@ -55,7 +63,7 @@
 
 ### Bugfixes
 
-- 0.16 compatibility fix by ochristi)
+- 0.16 compatibility fix by ochristi
 
 ### Other
 
