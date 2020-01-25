@@ -1,20 +1,53 @@
 {
+  "0.11.2": {
+    "date": "2020-01-26",
+    "Categories": {
+      "Bugfixes": [
+        {
+          "change": "Fix missing STYLE array on incomplete init",
+          "by": { "Roang-zero1": "https://github.com/Roang-zero1" }
+        }
+      ]
+    }
+  },
   "0.11.1": {
     "date": "2020-01-24",
     "Categories": {
-      "Bugfixes": ["Fix crash on initial machine build"]
+      "Bugfixes": [
+        {
+          "change": "Fix crash on initial machine build",
+          "by": { "Roang-zero1": "https://github.com/Roang-zero1" }
+        }
+      ]
     }
   },
   "0.11.0": {
     "date": "2020-01-24",
     "Categories": {
       "Features": [
-        "Use 0.17 API to request entity status",
-        "Show rocket silo status",
-        "New Icon options",
-        "More customization options"
+        {
+          "change": "Use 0.17 API to request entity status",
+          "by": { "Roang-zero1": "https://github.com/Roang-zero1" }
+        },
+        {
+          "change": "Show rocket silo status",
+          "by": { "Roang-zero1": "https://github.com/Roang-zero1" }
+        },
+        {
+          "change": "New Icon options",
+          "by": { "Roang-zero1": "https://github.com/Roang-zero1" }
+        },
+        {
+          "change": "More customization options",
+          "by": { "Roang-zero1": "https://github.com/Roang-zero1" }
+        }
       ],
-      "Bugfixes": ["Fix status lamps for laboratories"]
+      "Bugfixes": [
+        {
+          "change": "Fix status lamps for laboratories",
+          "by": { "Roang-zero1": "https://github.com/Roang-zero1" }
+        }
+      ]
     }
   },
   "0.10.5": {
