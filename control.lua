@@ -238,6 +238,9 @@ local function init()
 end
 
 local function on_load()
+  if # STYLE == 0 then
+    update_settings(nil)
+  end
   register_conditional_events()
 end
 
