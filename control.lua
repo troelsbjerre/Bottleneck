@@ -137,7 +137,7 @@ local function rebuild_overlays()
         end
 
         --[[rebuild signals for all supported entity types]]
-        for _, type in pairs(SUPPORTED_TYPES) do
+        for type in pairs(SUPPORTED_TYPES) do
           for _, entity in pairs(surface.find_entities_filtered{type=type}) do
             built({created_entity = entity})
           end
