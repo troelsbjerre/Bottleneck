@@ -32,17 +32,15 @@ end
 
 local STYLE = {}
 
-local SUPPORTED_TYPES = {
-    ["assembling-machine"] = true,
-    ["lab"] = true,
-    ["furnace"] = true,
-    ["mining-drill"] = true,
-    ["rocket-silo"] = true,
-}
+local SUPPORTED_TYPES = { "assembling-machine", "lab", "furnace", "mining-drill", "rocket-silo"}
 
-local BLACKLIST_NAMES = {
-    ["factory-port-marker"] = true
-}
+--[[ Support for searching in tables ]]
+local function inTable(tbl, item)
+  for key, value in pairs(tbl) do
+      if value == item then return true end
+  end
+  return false
+end
 
 --Faster to just change the color than it is to check it first.
 local function change_signal(data, status)
@@ -100,22 +98,24 @@ end
 --[[ A function that is called whenever an entity is built (both by player and by robots) ]]--
 local function built(event)
     local entity = event.created_entity or event.entity
+    local data
 
     -- If the entity that's been built is an assembly machine or a furnace...
-    if (SUPPORTED_TYPES[entity.type] and not BLACKLIST_NAMES[entity.name]) then
-        local data = {}
-        if not global.overlays[entity.unit_number] then
-            data.entity = entity
-            data.signal = new_signal(entity)
+    if inTable(SUPPORTED_TYPES, entity.type) and entity.name ~= "factory-port-marker" then
+      data = {}
+    end
 
-            --update[data.update](data)
-            global.overlays[entity.unit_number] = data
-            -- if we are in the process of removing LIGHTs, we need to restart
-            -- that, since inserting into the overlays table may mess up the
-            -- iteration order.
-            if global.show_bottlenecks == -1 then
-                global.update_index = nil
-            end
+    if data and not global.overlays[entity.unit_number] then
+        data.entity = entity
+        data.signal = new_signal(entity)
+
+        --update[data.update](data)
+        global.overlays[entity.unit_number] = data
+        -- if we are in the process of removing LIGHTs, we need to restart
+        -- that, since inserting into the overlays table may mess up the
+        -- iteration order.
+        if global.show_bottlenecks == -1 then
+            global.update_index = nil
         end
     end
 end
