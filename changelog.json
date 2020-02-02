@@ -1,4 +1,15 @@
 {
+  "0.11.3": {
+    "date": "2020-02-02",
+    "Categories": {
+      "Performance": [
+        {
+          "change": "Performance improvement: Use a truthy dictionary instead of iteration",
+          "by": { "Nexela": "https://github.com/Nexela" }
+        }
+      ]
+    }
+  },
   "0.11.2": {
     "date": "2020-01-26",
     "Categories": {
