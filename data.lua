@@ -51,10 +51,10 @@ local stoplight = {
 
 local colors = {
   white = {r = 1, g = 1, b = 1, a = 0.8},
-  blue = {r = 0, g = 0, b = 0.8, a = 0.8},
-  red = {r = 0.8, g = 0, b = 0, a = 0.8},
+  blue = {r = 0, g = 0.7, b = 1, a = 0.8},
+  red = {r = 1, g = 0.3, b = 0, a = 0.8},
   green = {r = 0, g = 0.8, b = 0, a = 0.8},
-  yellow = {r = 0.8, g = 0.8, b = 0, a = 0.8}
+  yellow = {r = 1, g = 0.8, b = 0, a = 0.8}
 }
 
 local icons = {
