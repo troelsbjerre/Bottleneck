@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.11.3 (2020-02-12)
+
+### Features:
+
+- New default icons by mybuddymichael
+- Danish localization
+- Japanese localization by shelaf
+
+### Performance
+ 
+- Performance improvement: Use a truthy dictionary instead of iteration
+
 ## 0.11.2 (2020-01-26)
 
 ### Bugfixes
