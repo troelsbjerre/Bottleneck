@@ -10,7 +10,17 @@ local icons = {
   "pause",
   "pause small",
   "stop",
-  "stop small"
+  "stop small",
+  "alert3D",
+  "alert3D small",
+  "cross3D",
+  "cross3D small",
+  "minus3D",
+  "minus3D small",
+  "pause3D",
+  "pause3D small",
+  "stop3D",
+  "stop3D small"
 }
 
 local colors = {

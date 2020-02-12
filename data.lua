@@ -63,7 +63,12 @@ local icons = {
   cross = "__Bottleneck__/graphics/cross-flat.png",
   minus = "__Bottleneck__/graphics/minus-flat.png",
   pause = "__Bottleneck__/graphics/pause-flat.png",
-  stop = "__Bottleneck__/graphics/stop-flat.png"
+  stop = "__Bottleneck__/graphics/stop-flat.png",
+  alert3D = "__Bottleneck__/graphics/alert.png",
+  cross3D = "__Bottleneck__/graphics/cross.png",
+  minus3D = "__Bottleneck__/graphics/minus.png",
+  pause3D = "__Bottleneck__/graphics/pause.png",
+  stop3D = "__Bottleneck__/graphics/stop.png"
 }
 
 for _, color_value in pairs(colors) do
