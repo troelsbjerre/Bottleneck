@@ -51,19 +51,24 @@ local stoplight = {
 
 local colors = {
   white = {r = 1, g = 1, b = 1, a = 0.8},
-  blue = {r = 0, g = 0, b = 0.8, a = 0.8},
-  red = {r = 0.8, g = 0, b = 0, a = 0.8},
+  blue = {r = 0, g = 0.7, b = 1, a = 0.8},
+  red = {r = 1, g = 0.3, b = 0, a = 0.8},
   green = {r = 0, g = 0.8, b = 0, a = 0.8},
-  yellow = {r = 0.8, g = 0.8, b = 0, a = 0.8}
+  yellow = {r = 1, g = 0.8, b = 0, a = 0.8}
 }
 
 local icons = {
-  none = "__Bottleneck__/graphics/white.png",
-  alert = "__Bottleneck__/graphics/alert.png",
-  cross = "__Bottleneck__/graphics/cross.png",
-  minus = "__Bottleneck__/graphics/minus.png",
-  pause = "__Bottleneck__/graphics/pause.png",
-  stop = "__Bottleneck__/graphics/stop.png"
+  none = "__Bottleneck__/graphics/white-flat.png",
+  alert = "__Bottleneck__/graphics/alert-flat.png",
+  cross = "__Bottleneck__/graphics/cross-flat.png",
+  minus = "__Bottleneck__/graphics/minus-flat.png",
+  pause = "__Bottleneck__/graphics/pause-flat.png",
+  stop = "__Bottleneck__/graphics/stop-flat.png",
+  alert3D = "__Bottleneck__/graphics/alert.png",
+  cross3D = "__Bottleneck__/graphics/cross.png",
+  minus3D = "__Bottleneck__/graphics/minus.png",
+  pause3D = "__Bottleneck__/graphics/pause.png",
+  stop3D = "__Bottleneck__/graphics/stop.png"
 }
 
 for _, color_value in pairs(colors) do
