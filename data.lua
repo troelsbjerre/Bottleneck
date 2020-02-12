@@ -58,12 +58,12 @@ local colors = {
 }
 
 local icons = {
-  none = "__Bottleneck__/graphics/white.png",
-  alert = "__Bottleneck__/graphics/alert.png",
-  cross = "__Bottleneck__/graphics/cross.png",
-  minus = "__Bottleneck__/graphics/minus.png",
-  pause = "__Bottleneck__/graphics/pause.png",
-  stop = "__Bottleneck__/graphics/stop.png"
+  none = "__Bottleneck__/graphics/white-flat.png",
+  alert = "__Bottleneck__/graphics/alert-flat.png",
+  cross = "__Bottleneck__/graphics/cross-flat.png",
+  minus = "__Bottleneck__/graphics/minus-flat.png",
+  pause = "__Bottleneck__/graphics/pause-flat.png",
+  stop = "__Bottleneck__/graphics/stop-flat.png"
 }
 
 for _, color_value in pairs(colors) do
