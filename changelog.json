@@ -1,7 +1,26 @@
 {
+  "0.11.4": {
+    "date": "2020-06-30",
+    "Categories": {
+      "Bugfixes": [
+        {
+          "change": "Fix Japanese localization",
+          "by": "shelaf"
+        },
+        {
+          "change": "Fix English localization",
+          "by": "stefprez"
+        },
+        {
+          "change": "Remove signal from new electric mining drill",
+          "by": "lstor"
+        }
+      ]
+    }
+  },
   "0.11.3": {
     "date": "2020-02-12",
-    "Changes": {
+    "Categories": {
       "Features": [
         {
           "change": "New default icons",
