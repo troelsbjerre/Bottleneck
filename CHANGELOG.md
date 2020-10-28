@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.11.5 (2020-10-28)
+
+### Rollback
+
+- Reintroduce signals to electric mining drill by troelsbjerre
+
+---
+
 ## 0.11.4 (2020-06-30)
 
 ### Bugfixes

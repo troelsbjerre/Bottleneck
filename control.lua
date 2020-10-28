@@ -51,7 +51,6 @@ local SUPPORTED_TYPES = {
 }
 
 local BLACKLIST_NAMES = {
-    ["electric-mining-drill"] = true,
     ["factory-port-marker"] = true,
 }
 

@@ -1,4 +1,15 @@
 {
+  "0.11.5": {
+    "date": "2020-10-28",
+    "Categories": {
+      "Rollback": [
+        {
+          "change": "Reintroduce signals to electric mining drill",
+          "by": "troelsbjerre"
+        }
+      ]
+    } 
+  },
   "0.11.4": {
     "date": "2020-06-30",
     "Categories": {
