@@ -1,3 +1,8 @@
+Version: 0.11.6
+Date: 2020-11-24
+
+  Bump:
+    - Version number, to allow factorio 1.1.x experimental by troelsbjerre
 ---------------------------------------------------------------------------------------------------
 Version: 0.11.5
 Date: 2020-10-28

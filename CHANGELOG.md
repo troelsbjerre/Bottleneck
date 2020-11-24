@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.11.6 (2020-11-24)
+
+### Bump
+
+- Version number, to allow factorio 1.1.x experimental by troelsbjerre
+
+---
+
 ## 0.11.5 (2020-10-28)
 
 ### Rollback
