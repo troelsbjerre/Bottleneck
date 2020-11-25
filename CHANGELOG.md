@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.11.7 (2020-11-25)
+
+### Bugfix
+
+- Change status types to match the updated ones in core factorio by troelsbjerre
+
+---
+
 ## 0.11.6 (2020-11-24)
 
 ### Bump

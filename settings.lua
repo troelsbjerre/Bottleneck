@@ -37,11 +37,59 @@ local settings_values = {
     color = "green",
     icon = "none"
   },
+  ["normal"] = {
+    color = "off",
+    icon = "none"
+  },
   ["no_power"] = {
     color = "red",
     icon = "alert"
   },
+  ["low_power"] = {
+    color = "red",
+    icon = "alert"
+  },
   ["no_fuel"] = {
+    color = "red",
+    icon = "alert"
+  },
+  ["disabled_by_control_behavior"] = {
+    color = "blue",
+    icon = "pause"
+  },
+  ["disabled_by_script"] = {
+    color = "blue",
+    icon = "pause"
+  },
+  ["marked_for_deconstruction"] = {
+    color = "red",
+    icon = "cross"
+  },
+  ["networks_connected"] = {
+    color = "green",
+    icon = "none"
+  },
+  ["networks_disconnected"] = {
+    color = "red",
+    icon = "none"
+  },
+  ["charging"] = {
+    color = "green",
+    icon = "none"
+  },
+  ["discharging"] = {
+    color = "green",
+    icon = "none"
+  },
+  ["fully_charged"] = {
+    color = "yellow",
+    icon = "pause"
+  },
+  ["no_recipe"] = {
+    color = "off",
+    icon = "none"
+  },
+  ["no_ingredients"] = {
     color = "red",
     icon = "alert"
   },
@@ -50,44 +98,28 @@ local settings_values = {
     icon = "alert"
   },
   ["no_research_in_progress"] = {
-    color = "white",
-    icon = "pause small"
+    color = "off",
+    icon = "none"
   },
   ["no_minable_resources"] = {
     color = "red",
     icon = "stop"
   },
   ["low_input_fluid"] = {
-    color = "yellow",
+    color = "red",
     icon = "alert"
-  },
-  ["low_power"] = {
-    color = "yellow",
-    icon = "alert"
-  },
-  ["disabled_by_control_behavior"] = {
-    color = "white",
-    icon = "stop small"
-  },
-  ["disabled_by_script"] = {
-    color = "white",
-    icon = "stop small"
   },
   ["fluid_ingredient_shortage"] = {
     color = "red",
     icon = "alert"
   },
-  ["fluid_production_overload"] = {
+  ["full_output"] = {
     color = "yellow",
     icon = "pause"
   },
   ["item_ingredient_shortage"] = {
     color = "red",
     icon = "alert"
-  },
-  ["item_production_overload"] = {
-    color = "yellow",
-    icon = "pause"
   },
   ["missing_required_fluid"] = {
     color = "red",
@@ -104,6 +136,34 @@ local settings_values = {
   ["waiting_for_space_in_destination"] = {
     color = "yellow",
     icon = "pause"
+  },
+  ["preparing_rocket_for_launch"] = {
+    color = "green",
+    icon = "alert"
+  },
+  ["waiting_to_launch_rocket"] = {
+    color = "yellow",
+    icon = "pause"
+  },
+  ["launching_rocket"] = {
+    color = "green",
+    icon = "alert"
+  },
+  ["no_modules_to_transmit"] = {
+    color = "red",
+    icon = "alert"
+  },
+  ["recharging_after_power_outage"] = {
+    color = "blue",
+    icon = "alert"
+  },
+  ["no_ammo"] = {
+    color = "red",
+    icon = "alert"
+  },
+  ["low_temperature"] = {
+    color = "red",
+    icon = "stop"
   },
 }
 

@@ -1,4 +1,16 @@
 {
+  "0.11.7": {
+    "date": "2020-11-25",
+    "Categories": {
+      "Bugfix": [
+        {
+          "change": "Change status types to match the updated ones in core
+					factorio",
+          "by": "troelsbjerre"
+        }
+      ]
+    } 
+  },
   "0.11.6": {
     "date": "2020-11-24",
     "Categories": {

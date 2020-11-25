@@ -1,3 +1,9 @@
+Version: 0.11.7
+Date: 2020-11-25
+
+  Bugfix:
+    - Change status types to match the updated ones in core factorio by troelsbjerre
+---------------------------------------------------------------------------------------------------
 Version: 0.11.6
 Date: 2020-11-24
 
