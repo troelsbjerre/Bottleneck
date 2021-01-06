@@ -180,7 +180,12 @@ local function on_tick()
                 if data.signal.valid then
                     if show_bottlenecks > 0 then
                         --Faster to just change the color than it is to check it first.
-                        data.signal.graphics_variation = STYLE[data.entity.status] or 1
+                        local status = entity.status
+                        if status == defines.entity_status.item_ingredient_shortage and
+                            not entity.get_output_inventory().is_empty() then
+                            status = defines.entity_status.full_output
+                        end
+                        data.signal.graphics_variation = STYLE[status] or 1
                     else
                         data.signal.graphics_variation = LIGHT["off"]
                     end
