@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.11.8 (2020-01-27)
+
+### Bugfix
+
+- Fix Japanese localization by shelaf
+- Fix English localization by shelaf
+
+---
+
 ## 0.11.7 (2020-11-25)
 
 ### Bugfix
