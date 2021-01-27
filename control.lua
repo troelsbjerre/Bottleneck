@@ -331,5 +331,7 @@ interface.change_signal = change_signal --function(data, color) change_signal(si
 interface.get_position_for_signal = get_signal_position_from
 --get the signal data associated with an entity
 interface.get_signal_data = function(unit_number) return global.overlays[unit_number] end
+--add an entity name to the list of ignored names
+interface.blacklist_name = function(entity_name) if(not BLACKLIST_NAMES[entity_name]) then BLACKLIST_NAMES[entity_name] = true; rebuild_overlays() end end
 
 remote.add_interface("Bottleneck", interface)
