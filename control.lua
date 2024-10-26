@@ -63,7 +63,7 @@ end
 local function remove_signal(event)
     local entity = event.entity
     local index = entity.unit_number
-    local overlays = global.overlays
+    local overlays = storage.overlays
     local data = overlays[index]
     if data then
         local signal = data.signal
@@ -71,7 +71,7 @@ local function remove_signal(event)
             signal.destroy()
         end
         overlays[index] = nil
-        global.update_index = nil
+        storage.update_index = nil
     end
 end
 
@@ -92,13 +92,13 @@ end
 
 local function new_signal(entity, variation)
     local signal = entity.surface.create_entity{name = "bottleneck-stoplight", position = get_signal_position_from(entity), force = entity.force}
-    signal.graphics_variation = (global.show_bottlenecks < 1 and LIGHT["off"]) or variation or STYLE[entity.status] or LIGHT["off"]
+    signal.graphics_variation = (storage.show_bottlenecks < 1 and LIGHT["off"]) or variation or STYLE[entity.status] or LIGHT["off"]
     signal.destructible = false
     return signal
 end
 
 local function entity_moved(event, data)
-    data = data or global.overlays[event.moved_entity.unit_number]
+    data = data or storage.overlays[event.moved_entity.unit_number]
     if data then
         if data.signal and data.signal.valid then
             local position = get_signal_position_from(event.moved_entity)
@@ -114,17 +114,17 @@ local function built(event)
     -- If the entity that's been built is an assembly machine or a furnace...
     if (SUPPORTED_TYPES[entity.type] and not BLACKLIST_NAMES[entity.name]) then
         local data = {}
-        if not global.overlays[entity.unit_number] then
+        if not storage.overlays[entity.unit_number] then
             data.entity = entity
             data.signal = new_signal(entity)
 
             --update[data.update](data)
-            global.overlays[entity.unit_number] = data
+            storage.overlays[entity.unit_number] = data
             -- if we are in the process of removing LIGHTs, we need to restart
             -- that, since inserting into the overlays table may mess up the
             -- iteration order.
-            if global.show_bottlenecks == -1 then
-                global.update_index = nil
+            if storage.show_bottlenecks == -1 then
+                storage.update_index = nil
             end
         end
     end
@@ -132,8 +132,8 @@ end
 
 local function rebuild_overlays()
     --[[Setup the global overlays table This table contains the machine entity, the signal entity and the freeze variable]]--
-    global.overlays = {}
-    global.update_index = nil
+    storage.overlays = {}
+    storage.update_index = nil
     --game.print("Bottleneck: Rebuilding data from scratch")
 
     --[[Find all assembling machines on the map. Check each surface]]--
@@ -156,14 +156,14 @@ local function rebuild_overlays()
 end
 
 local function on_tick()
-    local show_bottlenecks = global.show_bottlenecks
+    local show_bottlenecks = storage.show_bottlenecks
     if show_bottlenecks ~= 0 then
         local next = next --very slight perfomance improvment
 
         local signals_per_tick = bn_signals_per_tick
 
-        local overlays = global.overlays
-        local index = global.update_index
+        local overlays = storage.overlays
+        local index = storage.update_index
         local data
 
         --check for existing data at index
@@ -196,11 +196,11 @@ local function on_tick()
             numiter = numiter + 1
             index, data = next(overlays, index)
         end
-        global.update_index = index
+        storage.update_index = index
         -- if we have reached the end of the list (i.e., have removed all LIGHTs),
         -- pause updating until enabled by hotkey next
         if not index and show_bottlenecks <= 0 then
-            global.show_bottlenecks = 0
+            storage.show_bottlenecks = 0
             --We have cycled everything to off, disable the tick handler
             script.on_event(defines.events.on_tick, nil)
         end
@@ -229,18 +229,18 @@ local function register_conditional_events()
     if remote.interfaces["PickerDollies"] and remote.interfaces["PickerDollies"]["dolly_moved_entity_id"] then
         script.on_event(remote.call("PickerDollies", "dolly_moved_entity_id"), entity_moved)
     end
-    if global.show_bottlenecks ~= 0 then
+    if storage.show_bottlenecks ~= 0 then
         --Register the tick handler if we are showing bottlenecks
         script.on_event(defines.events.on_tick, on_tick)
     end
 end
 
 local function init()
-    global.overlays = {}
-    global.show_bottlenecks = 1
+    storage.overlays = {}
+    storage.show_bottlenecks = 1
     update_settings(nil)
     --register the tick handler if we are showing bottlenecks
-    if global.show_bottlenecks then
+    if storage.show_bottlenecks then
         script.on_event(defines.events.on_tick, on_tick)
     end
     rebuild_overlays()
@@ -262,15 +262,15 @@ local function on_configuration_changed(event)
         if changes then -- THIS Mod has changed
             game.print("Bottleneck: Updated from ".. tostring(changes.old_version) .. " to " .. tostring(changes.new_version))
             update_settings(nil)
-            global.show_bottlenecks = global.show_bottlenecks or 1
+            storage.show_bottlenecks = storage.show_bottlenecks or 1
             --Clean up old variables
-            global.lights_per_tick = nil
-            global.signals_per_tick = nil
-            global.showbottlenecks = nil
-            global.output_idle_signal = nil
-            global.high_contrast = nil
+            storage.lights_per_tick = nil
+            storage.signals_per_tick = nil
+            storage.showbottlenecks = nil
+            storage.output_idle_signal = nil
+            storage.high_contrast = nil
         end
-        global.overlays = {}
+        storage.overlays = {}
         rebuild_overlays()
     end
 end
@@ -289,11 +289,11 @@ local function on_hotkey(event)
         player.print('Bottleneck: You do not have privileges to toggle bottleneck')
         return
     end
-    global.update_index = nil
-    if global.show_bottlenecks == 1 then
-        global.show_bottlenecks = -1
+    storage.update_index = nil
+    if storage.show_bottlenecks == 1 then
+        storage.show_bottlenecks = -1
     else
-        global.show_bottlenecks = 1
+        storage.show_bottlenecks = 1
     end
     --Toggling the setting doesn't disable right way, make sure the handler gets
     --reenabled to toggle colors to their correct values.
@@ -317,9 +317,9 @@ script.on_event({e.on_entity_cloned}, on_entity_cloned)
 --[[ Setup remote interface]]--
 local interface = {}
 --is_enabled - return show_bottlenecks
-interface.enabled = function() return global.show_bottlenecks end
+interface.enabled = function() return storage.show_bottlenecks end
 --print the global to a file
-interface.print_global = function () game.write_file("Bottleneck/global.lua", serpent.block(global, {nocode=true, comment=false})) end
+interface.print_global = function () game.write_file("Bottleneck/storage.lua", serpent.block(global, {nocode=true, comment=false})) end
 --rebuild all icons
 interface.rebuild = rebuild_overlays
 --allow other mods to interact with bottleneck
@@ -330,6 +330,6 @@ interface.change_signal = change_signal --function(data, color) change_signal(si
 --get a place position for a signal
 interface.get_position_for_signal = get_signal_position_from
 --get the signal data associated with an entity
-interface.get_signal_data = function(unit_number) return global.overlays[unit_number] end
+interface.get_signal_data = function(unit_number) return storage.overlays[unit_number] end
 
 remote.add_interface("Bottleneck", interface)

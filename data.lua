@@ -33,7 +33,7 @@ local stoplight = {
   minable = nil,
   collision_box = nil,
   selection_box = nil,
-  collision_mask = {},
+  collision_mask = { layers = {floor = true} },
   render_layer = "explosion",
   vehicle_impact_sound = nil,
   pictures = {
