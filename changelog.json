@@ -1,11 +1,36 @@
 {
+  "0.12.0": {
+    "date": "2024-10-27",
+    "Categories": {
+      "Bugfix": [
+        {
+          "change": "Update to 2.0",
+          "by": "Rugal Bernstein"
+        }
+      ]
+    } 
+  },
+  "0.11.8": {
+    "date": "2020-11-27",
+    "Categories": {
+      "Bugfix": [
+        {
+          "change": "Fix Japanese localization",
+          "by": "shelaf"
+        },
+        {
+          "change": "Fix English localization",
+          "by": "shelaf"
+        }
+      ]
+    } 
+  },
   "0.11.7": {
     "date": "2020-11-25",
     "Categories": {
       "Bugfix": [
         {
-          "change": "Change status types to match the updated ones in core
-					factorio",
+          "change": "Change status types to match the updated ones in core factorio",
           "by": "troelsbjerre"
         }
       ]

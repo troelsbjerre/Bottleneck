@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.12.0 (2024-10-27)
+
+### Bugfix
+
+- Update to 2.0 by Rugal Bernstein
+
+---
+
 ## 0.11.8 (2020-01-27)
 
 ### Bugfix
