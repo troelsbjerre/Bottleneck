@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.12.1 (2024-12-04)
+
+### Bugfix
+
+- Fix signal position on non-square entities by Yourself
+
+---
+
 ## 0.12.0 (2024-10-27)
 
 ### Bugfix

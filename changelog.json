@@ -1,4 +1,15 @@
 {
+  "0.12.1": {
+    "date": "2024-12-04",
+    "Categories": {
+      "Bugfix": [
+        {
+          "change": "Fix signal position on non-square entities",
+          "by": "Yourself"
+        }
+      ]
+    } 
+  },
   "0.12.0": {
     "date": "2024-10-27",
     "Categories": {
