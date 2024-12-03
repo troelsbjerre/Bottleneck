@@ -77,17 +77,17 @@ end
 
 --[[ Calculates bottom center of the entity to place bottleneck there ]]
 local function get_signal_position_from(entity)
-    local left_top = entity.prototype.selection_box.left_top
-    local right_bottom = entity.prototype.selection_box.right_bottom
+    local left_top = entity.selection_box.left_top
+    local right_bottom = entity.selection_box.right_bottom
     --Calculating center of the selection box
     local center = (left_top.x + right_bottom.x) / 2
-    local width = math.abs(left_top.x) + right_bottom.x
+    local width = right_bottom.x - left_top.x
     -- Set Shift here if needed, The offset looks better as it doesn't cover up fluid input information
     -- Ignore shift for 1 tile entities
     local x = (width > 1.25 and center - 0.5) or center
     local y = right_bottom.y
     --Calculating bottom center of the selection box
-    return {x = entity.position.x + x, y = entity.position.y + y - 0.23}
+    return {x = x, y = y - 0.23}
 end
 
 local function new_signal(entity, variation)
