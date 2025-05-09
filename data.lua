@@ -34,6 +34,7 @@ local stoplight = {
   collision_box = nil,
   selection_box = nil,
   collision_mask = { layers = {floor = true} },
+  hidden_in_factoriopedia = true,
   render_layer = "explosion",
   vehicle_impact_sound = nil,
   pictures = {
