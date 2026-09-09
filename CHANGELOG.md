@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.13.0 (2026-09-08)
+
+### Bugfix
+
+- Update to 2.1 by Sparr
+
+---
+
 ## 0.12.1 (2024-12-04)
 
 ### Bugfix
