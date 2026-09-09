@@ -1,4 +1,15 @@
 {
+  "0.13.0": {
+    "date": "2026-09-08",
+    "Categories": {
+      "Bugfix": [
+        {
+          "change": "Update to 2.1",
+          "by": "Sparr"
+        }
+      ]
+    } 
+  },
   "0.12.1": {
     "date": "2024-12-04",
     "Categories": {
